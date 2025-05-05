@@ -24,6 +24,6 @@ jobs:
             cd /home/ubuntu/Resilisense-FE/ && echo "Directory changed to /home/ubuntu/Resilisense-FE" || echo "Failed to change directory"
             git add . && git commit -m "Committing uncommitted changes" || echo "No changes to commit"
             git pull origin main && echo "Git pull successful" || echo "Git pull failed"
-            npm install --legacy-peer-deps > /dev/null 2>&1 && echo "NPM install successful" || echo "NPM install failed"
+            npm install --force > /dev/null 2>&1 && echo "NPM install successful" || echo "NPM install failed"
             pm2 restart Resilisense-FE > /dev/null 2>&1 && echo "PM2 restarted successfully" || echo "PM2 restart failed"
             echo "======END======"
