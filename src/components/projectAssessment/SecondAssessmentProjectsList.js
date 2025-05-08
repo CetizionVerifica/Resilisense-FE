@@ -1,88 +1,109 @@
-import React, {Component} from 'react'
-import {Row, Col, Icon} from 'antd'
-import {withRouter} from 'react-router-dom'
-import {graphql} from 'react-apollo'
-import {connect} from 'react-redux'
-import {injectIntl} from 'react-intl'
-import {projectsMessages} from '../../messages'
-import {fetchProjectsByStatus} from '../../graphql/fetchProjects'
-import {secondAssessmentSorting, secondAssessmentSearch} from '../../actions'
-import TableWrapper from '../styles/table.style'
-import {sortColumnsWithoutReport, columns} from './ProjectsListConfig'
-import {InputSearch} from '../utility/inputSearch'
+import React, { Component } from "react";
+import { Row, Col, Icon } from "antd";
+import { withRouter } from "react-router-dom";
+import { graphql } from "react-apollo";
+import { connect } from "react-redux";
+import { injectIntl } from "react-intl";
+import { projectsMessages } from "../../messages";
+import { fetchProjectsByStatus } from "../../graphql/fetchProjects";
+import { secondAssessmentSorting, secondAssessmentSearch } from "../../actions";
+import TableWrapper from "../styles/table.style";
+import { sortColumnsWithoutReport, columns } from "./ProjectsListConfig";
+import { InputSearch } from "../utility/inputSearch";
 
 class SecondAssessmentProjectsList extends Component {
   constructor(props) {
-    super(props)
-    this.onChange = this.onChange.bind(this)
+    super(props);
+    this.onChange = this.onChange.bind(this);
     this.state = {
       dataList: this.props.data,
-      search: '',
+      search: "",
       visible: false,
       current: 0,
-    }
+    };
   }
   showModal = () => {
     this.setState({
       visible: true,
-    })
+    });
   };
   handleOk = () => {
-    this.setState({loading: true})
+    this.setState({ loading: true });
     setTimeout(() => {
-      this.setState({loading: false, visible: false})
-    }, 2000)
+      this.setState({ loading: false, visible: false });
+    }, 2000);
   };
   handleCancel = () => {
-    this.setState({visible: false})
-  }
+    this.setState({ visible: false });
+  };
   onChange(pagination, filters, sorter) {
     if (sorter && sorter.columnKey && sorter.order) {
-      if (sorter.order === 'ascend') {
-        this.props.projectSorting(sorter.columnKey, 'asc')
+      if (sorter.order === "ascend") {
+        this.props.projectSorting(sorter.columnKey, "asc");
       } else {
-        this.props.projectSorting(sorter.columnKey, 'desc')
+        this.props.projectSorting(sorter.columnKey, "desc");
       }
     }
   }
 
   onSearch() {
-    this.props.projectSearch('title', this.state.search)
+    this.props.projectSearch("title", this.state.search);
   }
   emitEmpty = () => {
-    this.setState({search: ''})
-    this.props.projectSearch('title', '')
-  }
+    this.setState({ search: "" });
+    this.props.projectSearch("title", "");
+  };
   render() {
-    const {search, dataList} = this.state
-    const {data: {loading, projectsByStatus}, hideSearch, intl: {formatMessage}} = this.props
+    const { search, dataList } = this.state;
+    const {
+      data: { loading, projectsByStatus },
+      hideSearch,
+      intl: { formatMessage },
+      currentUser,
+    } = this.props;
     if (!projectsByStatus) {
-      return <div />
+      return <div />;
     }
-    const suffix = search ? <Icon type="close-circle" onClick={this.emitEmpty} /> : null
-    return (
-      <div style={{marginRight: 30}}>
 
-        {!hideSearch && <Row style={{marginBottom: 15}}>
-          <Col span={12}>Second Assessment</Col>
-          <Col span={12}><InputSearch
-            placeholder={formatMessage(projectsMessages.searchProject)}
-            className="isoSearchNotes"
-            value={search}
-            prefix={<Icon type="search" style={{color: 'rgba(0,0,0,.25)'}} />}
-            onSearch={() => this.onSearch()}
-            enterButton
-            suffix={suffix}
-            onChange={(e) => this.setState({search: e.target.value})}
-          /></Col>
-        </Row>}
-        <Row >
+    // Filter projects based on reseller and currentUser ID
+    let filteredProjects = projectsByStatus;
+    if (currentUser && currentUser._id) {
+      filteredProjects = projectsByStatus.filter(
+        (project) => project.reseller === currentUser._id
+      );
+    }
+
+    const suffix = search ? (
+      <Icon type="close-circle" onClick={this.emitEmpty} />
+    ) : null;
+    return (
+      <div style={{ marginRight: 30 }}>
+        {!hideSearch && (
+          <Row style={{ marginBottom: 15 }}>
+            <Col span={12}>Second Assessment</Col>
+            <Col span={12}>
+              <InputSearch
+                placeholder={formatMessage(projectsMessages.searchProject)}
+                className="isoSearchNotes"
+                value={search}
+                prefix={
+                  <Icon type="search" style={{ color: "rgba(0,0,0,.25)" }} />
+                }
+                onSearch={() => this.onSearch()}
+                enterButton
+                suffix={suffix}
+                onChange={(e) => this.setState({ search: e.target.value })}
+              />
+            </Col>
+          </Row>
+        )}
+        <Row>
           <Col span={24}>
             <TableWrapper
               size="small"
               columns={!hideSearch ? sortColumnsWithoutReport : columns}
               onChange={this.onChange}
-              dataSource={projectsByStatus}
+              dataSource={filteredProjects}
               loading={loading}
               rowKey="id"
               className="sortingTable"
@@ -90,27 +111,27 @@ class SecondAssessmentProjectsList extends Component {
             />
           </Col>
         </Row>
-
       </div>
-    )
+    );
   }
 }
 
-function mapStateToProps({secondAssessment}) {
+function mapStateToProps({ secondAssessment, auth }) {
+  const status = "SecondAssessmentRequest";
+  const { sort, order, search, query } = secondAssessment;
+  const { currentUser } = auth;
 
-  const status = 'SecondAssessmentRequest'
-  const {sort, order, search, query} = secondAssessment
-
-  return {sortFild: sort, order, search, query, status}
+  return { sortFild: sort, order, search, query, status, currentUser };
 }
 
 function mapDispatchToProps(dispatch) {
-
   return {
     // dispatching plain actions
-    projectSearch: (searchField, query) => dispatch(secondAssessmentSearch(searchField, query)),
-    projectSorting: (sortField, order) => dispatch(secondAssessmentSorting(sortField, order)),
-  }
+    projectSearch: (searchField, query) =>
+      dispatch(secondAssessmentSearch(searchField, query)),
+    projectSorting: (sortField, order) =>
+      dispatch(secondAssessmentSorting(sortField, order)),
+  };
 }
 
 const SecondAssessmentProjectsListQL = graphql(fetchProjectsByStatus, {
@@ -123,9 +144,11 @@ const SecondAssessmentProjectsListQL = graphql(fetchProjectsByStatus, {
         search: props.search,
         s: props.query,
       },
-      fetchPolicy: 'network-only',
-    }
+      fetchPolicy: "network-only",
+    };
   },
-})(withRouter(SecondAssessmentProjectsList))
-export default connect(mapStateToProps, mapDispatchToProps)(injectIntl(SecondAssessmentProjectsListQL))
-
+})(withRouter(SecondAssessmentProjectsList));
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(injectIntl(SecondAssessmentProjectsListQL));

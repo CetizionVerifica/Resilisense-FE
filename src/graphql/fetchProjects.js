@@ -91,6 +91,7 @@ const fetchProjectsByStatus = gql`
       arctive
       status
       date
+      reseller
       updatedDate
       numberOfEmployees
       gapFiles {

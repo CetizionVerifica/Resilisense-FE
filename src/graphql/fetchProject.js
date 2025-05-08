@@ -1,7 +1,7 @@
-import gql from 'graphql-tag'
+import gql from "graphql-tag";
 export default gql`
-query project($id: ID!){
-    project(id:$id) {
+  query project($id: ID!) {
+    project(id: $id) {
       id
       title
       year
@@ -11,6 +11,7 @@ query project($id: ID!){
       numberOfEmployees
       endDate
       updatedDate
+
       status
       createdBy {
         _id
@@ -66,7 +67,7 @@ query project($id: ID!){
               noRelatedDocument
               file {
                 id
-              }              
+              }
             }
           }
         }
@@ -87,4 +88,4 @@ query project($id: ID!){
       }
     }
   }
-`
+`;
