@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main
+      - production
 
 jobs:
   deploy:
@@ -21,15 +21,14 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-           script: |
-             cd /home/ubuntu/Resilisense-FE/ || exit 1
-             git config pull.rebase false
-             git add . && git commit -m "Committing uncommitted changes" || echo "No changes to commit"
-             git pull origin main
-             npm install --force
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm use node
-            pm2 restart Resilisense-FE
-            echo "======END======"
-
+            script: |
+              cd /home/ubuntu/Resilisense-FE/ || exit 1
+              git config pull.rebase false
+              git add . && git commit -m "Committing uncommitted changes" || echo "No changes to commit"
+              git pull origin production
+              npm install --force
+             export NVM_DIR="$HOME/.nvm"
+             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+             nvm use node
+             pm2 restart Resilisense-FE
+             echo "======END======"
