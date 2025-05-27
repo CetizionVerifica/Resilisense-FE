@@ -34,6 +34,7 @@
     "classnames": "^2.2.6",
     "concurrently": "^3.5.1",
     "dom-to-image": "^2.6.0",
+    "dom-to-image-more": "^3.6.0",
     "echarts": "^4.0.4",
     "echarts-for-react": "^2.0.8",
     "eslint": "^4.13.1",
