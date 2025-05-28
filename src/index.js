@@ -7,18 +7,18 @@ import 'react-app-polyfill/stable';
 import 'antd/dist/antd.css'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Provider } from 'react-redux'
-import { IntlProvider } from 'react-intl-redux'
+import {Provider} from 'react-redux'
+import {IntlProvider} from 'react-intl-redux'
 //import ApolloClient from 'apollo-client'
-import { ApolloProvider } from 'react-apollo'
-import { createStore, applyMiddleware } from 'redux'
+import {ApolloProvider} from 'react-apollo'
+import {createStore, applyMiddleware} from 'redux'
 import reduxThunk from 'redux-thunk'
 import bugsnag from 'bugsnag-js'
 import createPlugin from 'bugsnag-react'
 import reducers from './reducers'
 import client from './ApolloClient'
 import App from './components/App'
-import { AUTH_USER } from './actions/types'
+import {AUTH_USER} from './actions/types'
 
 const bugsnagClient = bugsnag('913145ba2ace2ee97c808d36853f2ce8')
 bugsnagClient.notifyReleaseStages = ['production', 'staging']
@@ -50,7 +50,7 @@ const token = localStorage.getItem('token') // eslint-disable-line
 // if we have token consder user to be siged in
 if (token) {
   // we need to update application state
-  store.dispatch({ type: AUTH_USER })
+  store.dispatch({type: AUTH_USER})
 }
 
 // store.subscribe(state => {
@@ -68,5 +68,3 @@ ReactDOM.render(
     </Provider>
   </ApolloProvider>
   , document.querySelector('#root')) // eslint-disable-line
-
-//My comment for CI/CD
