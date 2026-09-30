@@ -23,9 +23,9 @@ npm test                # Vitest unit/component tests
 npm run test:e2e        # Playwright (+ axe) against dev server with MSW or staging API
 npm run storybook       # design-system workbench (a11y, RTL, dark-mode toolbars)
 npm run i18n:extract    # update locales/en/*.json; CI fails on missing en keys
-npm run build           # static build to dist/ (deployed to S3 + CloudFront by CI)
+npm run build           # static build to dist/ (deployed to Cloudflare Pages by CI — no AWS)
 ```
-Never commit `dist/`/`build/`, never use `--force` installs, never ship public source maps.
+Never commit `dist/`/`build/`, never use `--force` installs, never ship public source maps. **No AWS** for hosting or deployment (owner decision, ADR-011): the SPA and the public survey app are deployed to Cloudflare Pages; don't add S3/CloudFront/Amplify scripts or AWS SDKs.
 
 ## Architecture rules
 
