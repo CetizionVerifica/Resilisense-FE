@@ -21,7 +21,7 @@ pipeline {
                                     cd /var/www/CSR_FE && \
                                     git add . && \
                                     git commit -m "update" && \
-                                    git pull origin main && \
+                                    git pull origin legacy && \
                                     npm install -f && \
                                     pm2 delete CSR_FE && \
                                     pm2 start "npm start" --name CSR_FE -- start
