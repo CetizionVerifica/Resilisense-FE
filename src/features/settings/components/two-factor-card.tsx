@@ -115,18 +115,17 @@ function DisableMfaDialog({
   });
   const { errors } = form.formState;
   const err = (m?: string) => (m ? t(m) : undefined);
+  // Cancel, X, Esc and overlay all clear the typed password and code.
+  const setOpen = (o: boolean) => {
+    if (!o) {
+      form.reset();
+      disable.reset();
+    }
+    onOpenChange(o);
+  };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(o) => {
-        if (!o) {
-          form.reset();
-          disable.reset();
-        }
-        onOpenChange(o);
-      }}
-    >
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent closeLabel={t('common:action.close')}>
         <form noValidate className="grid gap-4" onSubmit={form.handleSubmit((v) => disable.mutate({ data: v }))}>
           <div className="grid gap-2 pe-8">
@@ -145,7 +144,7 @@ function DisableMfaDialog({
             <Input inputMode="numeric" autoComplete="one-time-code" maxLength={6} {...form.register('code')} />
           </FormField>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
               {t('common:action.cancel')}
             </Button>
             <Button type="submit" variant="destructive" loading={disable.isPending}>

@@ -1,8 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { authControllerEndImpersonation, authControllerLogout } from '@/api/generated/auth/auth';
-import { refreshSession, setSessionExpiredHandler } from '../api-client';
+import {
+  refreshSession,
+  setImpersonating,
+  setImpersonationExpiredHandler,
+  setSessionExpiredHandler,
+} from '../api-client';
 import { authToken } from '../auth-token';
+import { isApiError } from '../problem';
 
 export type AuthStatus = 'bootstrapping' | 'signed-in' | 'signed-out';
 
@@ -52,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const startSession = useCallback(
     (accessToken: string) => {
       setExpired(false);
+      setImpersonating(false); // re-set from the new session's /me
       authToken.set(accessToken);
       // Reset (not clear): mounted observers stay attached and refetch as the new session /
       // workspace, and nothing cached for the previous one survives (US-01-3).
@@ -65,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         await authControllerLogout(opts?.allDevices ? { all: 'true' } : undefined);
       } finally {
+        setImpersonating(false);
         authToken.set(null);
         queryClient.clear();
       }
@@ -72,12 +80,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [queryClient],
   );
 
-  const endImpersonation = useCallback(async () => {
-    await authControllerEndImpersonation();
-    // The impersonation token was access-only; the refresh cookie still belongs to the owner.
+  /** Back to the owner's own session (refresh cookie) with nothing cached from the impersonation. */
+  const returnToOwnSession = useCallback(async () => {
+    setImpersonating(false);
     if (await refreshSession()) await queryClient.resetQueries();
     else queryClient.clear();
   }, [queryClient]);
+
+  useEffect(() => {
+    setImpersonationExpiredHandler(() => void returnToOwnSession());
+  }, [returnToOwnSession]);
+
+  const endImpersonation = useCallback(async () => {
+    try {
+      await authControllerEndImpersonation();
+    } catch (e) {
+      // Already expired or ended (401 / 409): still return to the owner's own session.
+      if (!isApiError(e) || (e.status !== 401 && e.status !== 409)) throw e;
+    }
+    await returnToOwnSession();
+  }, [returnToOwnSession]);
 
   const value = useMemo(
     () => ({ status, expired, startSession, signOut, endImpersonation }),

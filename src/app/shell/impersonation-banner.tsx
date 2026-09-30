@@ -1,8 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
 import { UserRoundCog } from 'lucide-react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { setImpersonating } from '@/lib/api-client';
 import { useAuth } from '@/lib/auth/auth-provider';
 import { useMe } from '@/lib/auth/me';
 
@@ -18,6 +20,12 @@ export function ImpersonationBanner() {
     mutationFn: endImpersonation,
     onError: () => toast.error(t('impersonation.endFailed')),
   });
+
+  const impersonated = me ? !!me.impersonatedBy : undefined;
+  // Tell the API client (401 handling) — only from a loaded /me, never while it refetches.
+  useEffect(() => {
+    if (impersonated !== undefined) setImpersonating(impersonated);
+  }, [impersonated]);
 
   if (!me?.impersonatedBy) return null;
   return (

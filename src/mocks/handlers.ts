@@ -68,8 +68,8 @@ function profileOf(user: MockUser): Profile {
 function issue(session: Session) {
   const accessToken = `mock-access-${++state.counter}`;
   state.sessions.set(accessToken, session);
-  // Impersonation tokens never replace the platform owner's refresh cookie (M01 §7.1).
-  if (!session.user.impersonatedBy) state.cookie = session;
+  // Impersonation tokens are access-only: the refresh cookie stays the platform owner's (M01 §7.1).
+  state.cookie = session.user.impersonatedBy ? { user: OWNER, workspaceId: WS_ACME } : session;
   return { accessToken, tokenType: 'Bearer' as const, expiresIn: 900, workspaceId: session.workspaceId };
 }
 

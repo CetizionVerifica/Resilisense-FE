@@ -257,15 +257,14 @@ function ChangeRoleDialog({
   const { t } = useTranslation('members');
   const invalidate = useInvalidateMembers(wid);
   const [role, setRole] = useState<MemberRole | ''>('');
-  const update = useMembersControllerUpdate({
-    mutation: {
-      onSuccess: (m) => {
-        toast.success(t('toast.roleChanged', { name: m.name, role: t(`common:role.${m.role}`) }));
-        void invalidate();
-        onClose();
-      },
-    },
-  });
+  const update = useMembersControllerUpdate();
+  // One close path for Cancel, success, X, Esc and overlay: the dialog stays mounted, so a
+  // leftover choice would otherwise be preselected (and submitted) for the next member.
+  const close = () => {
+    setRole('');
+    update.reset();
+    onClose();
+  };
   const options = member && !grantable.includes(member.role) ? [member.role, ...grantable] : grantable;
   const selected = role || member?.role || '';
 
@@ -273,11 +272,7 @@ function ChangeRoleDialog({
     <Dialog
       open={member !== null}
       onOpenChange={(open) => {
-        if (!open) {
-          setRole('');
-          update.reset();
-          onClose();
-        }
+        if (!open) close();
       }}
     >
       <DialogContent closeLabel={t('common:action.close')}>
@@ -286,15 +281,25 @@ function ChangeRoleDialog({
             className="grid gap-4"
             onSubmit={(e) => {
               e.preventDefault();
-              if (selected && selected !== member.role) update.mutate({ wid, id: member.id, data: { role: selected } });
-              else onClose();
+              if (selected && selected !== member.role) {
+                update.mutate(
+                  { wid, id: member.id, data: { role: selected } },
+                  {
+                    onSuccess: (m) => {
+                      toast.success(t('toast.roleChanged', { name: m.name, role: t(`common:role.${m.role}`) }));
+                      void invalidate();
+                      close();
+                    },
+                  },
+                );
+              } else close();
             }}
           >
             <div className="grid gap-2 pe-8">
               <DialogTitle>{t('changeRole.title', { name: member.name })}</DialogTitle>
               <DialogDescription>{t('changeRole.description')}</DialogDescription>
             </div>
-            {update.error ? <Alert tone="danger">{memberProblem(t, update.error)}</Alert> : null}
+            {update.error ? <Alert tone="danger">{memberProblem(t, update.error, 'member')}</Alert> : null}
             <FormField label={t('column.role')}>
               <Select value={selected} onChange={(e) => setRole(e.target.value as MemberRole)}>
                 {options.map((r) => (
@@ -305,7 +310,7 @@ function ChangeRoleDialog({
               </Select>
             </FormField>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="secondary" onClick={onClose}>
+              <Button type="button" variant="secondary" onClick={close}>
                 {t('common:action.cancel')}
               </Button>
               <Button type="submit" loading={update.isPending}>
@@ -364,7 +369,7 @@ function MemberConfirm({ wid, action, onClose }: { wid: string; action: Action |
         } else update.mutate({ wid, id: member.id, data: { active: kind === 'reactivate' } });
       }}
     >
-      {error ? <Alert tone="danger">{memberProblem(t, error)}</Alert> : null}
+      {error ? <Alert tone="danger">{memberProblem(t, error, 'member')}</Alert> : null}
     </ConfirmDialog>
   );
 }

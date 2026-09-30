@@ -57,21 +57,21 @@ export function InviteSheet({
     void invalidate();
   };
 
+  // Every close path (X, Esc, overlay, Cancel, Done) goes through here so the next open shows the form.
+  const setOpen = (o: boolean) => {
+    if (!o) setResults(null);
+    onOpenChange(o);
+  };
+
   return (
-    <Sheet
-      open={open}
-      onOpenChange={(o) => {
-        if (!o) setResults(null);
-        onOpenChange(o);
-      }}
-    >
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent closeLabel={t('common:action.close')}>
         <SheetHeader>
           <SheetTitle>{t('invite.title')}</SheetTitle>
           <SheetDescription>{t('invite.description')}</SheetDescription>
         </SheetHeader>
         {results ? (
-          <InviteResults results={results} onMore={() => setResults(null)} onClose={() => onOpenChange(false)} />
+          <InviteResults results={results} onMore={() => setResults(null)} onClose={() => setOpen(false)} />
         ) : (
           <Tabs value={tab} onValueChange={setTab} className="flex flex-1 flex-col">
             <TabsList className="px-5">
@@ -79,10 +79,10 @@ export function InviteSheet({
               <TabsTrigger value="csv">{t('invite.byCsv')}</TabsTrigger>
             </TabsList>
             <TabsContent value="email" className="flex flex-1 flex-col pt-0">
-              <EmailInviteForm wid={wid} grantable={grantable} onDone={done} onCancel={() => onOpenChange(false)} />
+              <EmailInviteForm wid={wid} grantable={grantable} onDone={done} onCancel={() => setOpen(false)} />
             </TabsContent>
             <TabsContent value="csv" className="flex flex-1 flex-col pt-0">
-              <CsvInviteForm wid={wid} onDone={done} onCancel={() => onOpenChange(false)} />
+              <CsvInviteForm wid={wid} onDone={done} onCancel={() => setOpen(false)} />
             </TabsContent>
           </Tabs>
         )}

@@ -28,7 +28,8 @@ export function RequireAuth() {
 /** Where to go after signing in: the page RequireAuth bounced from, if it is a same-app path. */
 export function returnPath(state: unknown): string {
   const from = (state as { from?: unknown } | null)?.from;
-  return typeof from === 'string' && from.startsWith('/') && !from.startsWith('//') ? from : '/';
+  // Same-app paths only: no protocol-relative `//host` and no `/\\host` (browsers treat `\\` as `/`).
+  return typeof from === 'string' && /^\/(?![/\\])/.test(from) && !from.includes('\\') ? from : '/';
 }
 
 /**

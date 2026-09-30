@@ -89,7 +89,8 @@
     "forbidden": "You can't make this change. You can only grant roles up to your own, and you can't change your own role.",
     "lastOwner": "A workspace must keep at least one owner. Make someone else owner first.",
     "limit": "Your plan's user limit is reached. Remove members or upgrade the plan to invite more.",
-    "notFound": "This member or invitation no longer exists. Refresh the list."
+    "notFound": "This member or invitation no longer exists. Refresh the list.",
+    "inProgress": "This request is still being processed. Wait a moment and try again."
   },
   "invitation": {
     "expired": "Expired",

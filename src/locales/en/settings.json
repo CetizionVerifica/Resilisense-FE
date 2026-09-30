@@ -36,7 +36,7 @@
     "new": "New email address",
     "submit": "Send confirmation link",
     "sent": "Check {email} for a confirmation link. It expires in 24 hours. Your current address stays active until then.",
-    "inUse": "This email address is already in use."
+    "inProgress": "Your previous request is still being processed. Wait a moment and try again."
   },
   "mfa": {
     "title": "Two-factor authentication",

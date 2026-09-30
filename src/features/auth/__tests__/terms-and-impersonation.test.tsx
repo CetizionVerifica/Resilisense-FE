@@ -1,4 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
+import { http, HttpResponse } from 'msw';
+import { server } from '@/test/server';
 import { renderSignedIn } from '@/test/session';
 
 describe('terms acceptance gate (M01 §4.1, §7.1)', () => {
@@ -45,5 +47,39 @@ describe('impersonation banner (M01 §4.2, §7.1)', () => {
     await renderSignedIn('/');
     await screen.findByRole('heading', { name: 'Welcome, Alice Admin' });
     expect(screen.queryByRole('button', { name: 'End impersonation' })).not.toBeInTheDocument();
+  });
+});
+
+describe('review fixes', () => {
+  it('fails closed: no app when /me cannot be loaded', { timeout: 15_000 }, async () => {
+    server.use(http.get('*/v1/me', () => HttpResponse.json({}, { status: 500 })));
+    await renderSignedIn('/');
+    expect(await screen.findByRole('heading', { name: 'Something went wrong' }, { timeout: 6000 })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Main navigation' })).not.toBeInTheDocument();
+  });
+
+  it('an expired impersonation returns to the owner instead of silently refreshing as them', async () => {
+    const { user } = await renderSignedIn('/', 'impersonated@example.com');
+    await screen.findByRole('button', { name: 'End impersonation' });
+    server.use(http.patch('*/v1/me', () => HttpResponse.json({}, { status: 401 }), { once: true }));
+    await user.click(screen.getByRole('button', { name: 'Account menu' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Account settings' }));
+    await user.type(await screen.findByLabelText('Job title'), 'Analyst');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'End impersonation' })).not.toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: 'Account menu' }));
+    expect(await screen.findByText('Paula Platform')).toBeInTheDocument();
+  });
+
+  it('keeps the shell mounted while /me refetches after a workspace switch', async () => {
+    const { user } = await renderSignedIn('/');
+    await screen.findByRole('heading', { name: 'Welcome, Alice Admin' });
+    const nav = screen.getByRole('navigation', { name: 'Main navigation' });
+    await user.click(screen.getByRole('button', { name: 'Switch workspace' }));
+    await user.click(await screen.findByRole('menuitemradio', { name: /Beta Foods/ }));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Switch workspace' })).toHaveTextContent('Beta Foods'),
+    );
+    expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBe(nav);
   });
 });

@@ -240,3 +240,34 @@ describe('invitations (M01 §4.1, US-01-1)', () => {
     await waitFor(() => expect(screen.queryByText('dana@example.com')).not.toBeInTheDocument());
   });
 });
+
+describe('dialog state is reset on every close (review fixes)', () => {
+  it('reopening the invite sheet after "Done" shows the form, not the old results', async () => {
+    const { user } = await renderSignedIn('/settings/members?invite=1');
+    const sheet = await screen.findByRole('dialog', { name: 'Invite people' });
+    await user.type(within(sheet).getByLabelText('Email addresses'), 'zoe@example.com');
+    await user.click(within(sheet).getByRole('button', { name: 'Send 1 invitation' }));
+    await user.click(await within(sheet).findByRole('button', { name: 'Done' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: 'Invite people' }));
+    expect(await screen.findByLabelText('Email addresses')).toHaveValue('');
+  });
+
+  it('a cancelled role choice is not preselected for the next member', async () => {
+    const { user } = await renderSignedIn('/settings/members');
+    await user.click(
+      within(await row('Members', 'Olga Owner')).getByRole('button', { name: 'Actions for Olga Owner' }),
+    );
+    await user.click(await screen.findByRole('menuitem', { name: 'Change role…' }));
+    let dialog = await screen.findByRole('dialog', { name: 'Change role of Olga Owner' });
+    await user.selectOptions(within(dialog).getByLabelText('Role'), 'viewer');
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+    await user.click(
+      within(await row('Members', 'Carl Contributor')).getByRole('button', { name: 'Actions for Carl Contributor' }),
+    );
+    await user.click(await screen.findByRole('menuitem', { name: 'Change role…' }));
+    dialog = await screen.findByRole('dialog', { name: 'Change role of Carl Contributor' });
+    expect(within(dialog).getByLabelText('Role')).toHaveValue('contributor');
+  });
+});

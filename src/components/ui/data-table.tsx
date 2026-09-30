@@ -1,6 +1,7 @@
 import { type ColumnDef, createColumnHelper, type RowData, tableFeatures, useTable } from '@tanstack/react-table';
 import { type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { Alert } from './alert';
 import { Button } from './button';
 import { Skeleton } from './skeleton';
 import { ErrorState } from './states';
@@ -48,7 +49,10 @@ export function DataTable<T extends RowData>({
 }: DataTableProps<T>) {
   const table = useTable({ features: dataTableFeatures, columns, data, getRowId });
 
-  if (isError) return <ErrorState title={labels.errorTitle} retryLabel={labels.retry} onRetry={onRetry} />;
+  // Nothing loaded yet → full error state; a failed "Load more" or refetch keeps the rows on screen.
+  if (isError && data.length === 0) {
+    return <ErrorState title={labels.errorTitle} retryLabel={labels.retry} onRetry={onRetry} />;
+  }
   if (isPending) {
     return (
       <div className="grid gap-2 p-4" role="status" aria-label={labels.loading}>
@@ -93,7 +97,18 @@ export function DataTable<T extends RowData>({
           </tbody>
         </table>
       </div>
-      {hasMore && onLoadMore ? (
+      {isError ? (
+        <div className="border-t border-border p-3">
+          <Alert tone="danger">
+            <span className="flex flex-wrap items-center justify-between gap-2">
+              {labels.errorTitle}
+              <Button size="sm" variant="secondary" onClick={onRetry}>
+                {labels.retry}
+              </Button>
+            </span>
+          </Alert>
+        </div>
+      ) : hasMore && onLoadMore ? (
         <div className="flex justify-center border-t border-border p-3">
           <Button variant="secondary" loading={loadingMore} onClick={onLoadMore}>
             {labels.loadMore}

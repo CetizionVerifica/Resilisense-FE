@@ -59,7 +59,7 @@ export function ChangeEmailCard({ currentEmail }: { currentEmail: string }) {
             !isApiError(change.error, 'forbidden') &&
             !isApiError(change.error, 'validation_failed') ? (
               <Alert tone="danger">
-                {isApiError(change.error, 'conflict') ? t('email.inUse') : t('common:error.title')}
+                {isApiError(change.error, 'conflict') ? t('email.inProgress') : t('common:error.title')}
               </Alert>
             ) : null}
             <FormField label={t('email.new')} error={err(errors.newEmail?.message)}>

@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { ExternalLink } from 'lucide-react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router';
@@ -8,7 +9,7 @@ import { getMeControllerGetQueryKey, useMeControllerAcceptTerms } from '@/api/ge
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PageSkeleton } from '@/components/ui/states';
+import { ErrorState, PageSkeleton } from '@/components/ui/states';
 import { useAuth } from '@/lib/auth/auth-provider';
 import { useMe } from '@/lib/auth/me';
 import { AuthHeading } from './auth-card';
@@ -18,26 +19,36 @@ import { type TermsValues, termsSchema } from '../schemas';
 
 /**
  * Blocks the app until the current terms & licence version is accepted (M01 §4.1, §7.1:
- * `GET /me` → `termsAcceptanceRequired`). The API records version + timestamp.
+ * `GET /me` → `termsAcceptanceRequired`). The API records version + timestamp but does not
+ * enforce acceptance, so the gate fails closed: no `/me`, no app.
+ *
+ * Once the app has been shown in this session it stays mounted while `/me` refetches (a workspace
+ * switch resets queries), so the shell isn't torn down and rebuilt on every switch.
  */
 export function TermsGate() {
   const { t } = useTranslation();
-  const { data: me, isPending } = useMe();
-  if (isPending) {
-    return (
-      <div className="mx-auto max-w-5xl p-8">
-        <PageSkeleton label={t('state.loading')} />
-      </div>
-    );
-  }
-  if (me?.termsAcceptanceRequired && !me.impersonatedBy) {
+  const { data: me, isError, refetch } = useMe();
+  const [admitted, setAdmitted] = useState(false);
+  const mustAccept = !!me?.termsAcceptanceRequired && !me.impersonatedBy;
+  if (me && !mustAccept && !admitted) setAdmitted(true);
+
+  if (mustAccept) {
     return (
       <AuthLayout>
         <TermsForm version={me.currentTermsVersion} />
       </AuthLayout>
     );
   }
-  return <Outlet />;
+  if (me || admitted) return <Outlet />;
+  return (
+    <div className="mx-auto max-w-5xl p-8">
+      {isError ? (
+        <ErrorState title={t('error.title')} retryLabel={t('action.retry')} onRetry={() => void refetch()} />
+      ) : (
+        <PageSkeleton label={t('state.loading')} />
+      )}
+    </div>
+  );
 }
 
 function TermsForm({ version }: { version: string }) {
