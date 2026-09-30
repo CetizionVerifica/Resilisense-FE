@@ -4,7 +4,10 @@
     "reload": "Reload page",
     "close": "Close",
     "back": "Back",
-    "backToSignIn": "Back to sign in"
+    "backToSignIn": "Back to sign in",
+    "cancel": "Cancel",
+    "save": "Save changes",
+    "discard": "Discard changes"
   },
   "state": {
     "loading": "Loading…"
@@ -30,8 +33,10 @@
     "skipToContent": "Skip to content",
     "home": "Home",
     "group": {
-      "workspace": "Workspace"
-    }
+      "workspace": "Workspace",
+      "admin": "Admin"
+    },
+    "settings": "Settings"
   },
   "workspace": {
     "label": "Workspaces",
@@ -55,7 +60,8 @@
     "placeholder": "Type a command or search",
     "empty": "No results",
     "navigate": "Go to",
-    "actions": "Actions"
+    "actions": "Actions",
+    "invite": "Invite people"
   },
   "notifications": {
     "label": "Notifications",
@@ -63,7 +69,8 @@
   },
   "user": {
     "menu": "Account menu",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "settings": "Account settings"
   },
   "theme": {
     "label": "Theme",
@@ -88,5 +95,10 @@
       "title": "You're not in a workspace yet",
       "description": "Ask a workspace admin to invite you, or open the invitation link from your email."
     }
+  },
+  "impersonation": {
+    "banner": "You're signed in as {user} ({email}) on behalf of {by}. Everything you do is recorded.",
+    "end": "End impersonation",
+    "endFailed": "Couldn't end the impersonation. Try again."
   }
 }

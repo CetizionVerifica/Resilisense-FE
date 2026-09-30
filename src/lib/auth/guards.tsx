@@ -25,11 +25,21 @@ export function RequireAuth() {
   return <Outlet />;
 }
 
-/** Sign-in / forgot-password are pointless when already signed in. */
+/** Where to go after signing in: the page RequireAuth bounced from, if it is a same-app path. */
+export function returnPath(state: unknown): string {
+  const from = (state as { from?: unknown } | null)?.from;
+  return typeof from === 'string' && from.startsWith('/') && !from.startsWith('//') ? from : '/';
+}
+
+/**
+ * Sign-in / sign-up / forgot-password are pointless when already signed in. Signing in lands
+ * here too (the session starts before the page navigates), so honour the return path.
+ */
 export function PublicOnly() {
   const { status } = useAuth();
+  const location = useLocation();
   if (status === 'bootstrapping') return <Bootstrapping />;
-  if (status === 'signed-in') return <Navigate to="/" replace />;
+  if (status === 'signed-in') return <Navigate to={returnPath(location.state)} replace />;
   return <Outlet />;
 }
 

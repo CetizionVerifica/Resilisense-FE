@@ -18,6 +18,13 @@ export default defineConfig({
         mutator: { path: './src/lib/api-client.ts', name: 'apiFetch' },
         query: { signal: true },
         fetch: { includeHttpResponseReturnType: false },
+        // Cursor-paginated lists ("Load more"): the page param is the `cursor` query param.
+        operations: Object.fromEntries(
+          ['MembersController_list', 'MembersController_invitations', 'PlatformUsersController_list'].map((id) => [
+            id,
+            { query: { useQuery: true, useInfinite: true, useInfiniteQueryParam: 'cursor', signal: true } },
+          ]),
+        ),
       },
     },
   },

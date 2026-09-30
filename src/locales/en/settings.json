@@ -1,0 +1,75 @@
+{
+  "title": "Settings",
+  "description": "Your profile, sign-in security and — for admins — the people in this workspace.",
+  "sections": "Settings sections",
+  "tab": {
+    "profile": "Profile",
+    "security": "Security",
+    "members": "Members"
+  },
+  "impersonating": "Security settings belong to the person you are signed in as. End the impersonation to manage your own account.",
+  "profile": {
+    "title": "Profile",
+    "description": "How you appear to your colleagues, and your language and time zone.",
+    "name": "Full name",
+    "email": "Email",
+    "emailHint": "Change it under Security.",
+    "jobTitle": "Job title",
+    "phone": "Phone",
+    "phoneInvalid": "Use digits, spaces, brackets and dashes, optionally starting with +",
+    "language": "Language",
+    "timezone": "Time zone",
+    "theme": "Theme",
+    "saved": "Profile saved"
+  },
+  "password": {
+    "title": "Password",
+    "description": "Changing your password signs you out on your other devices.",
+    "current": "Current password",
+    "currentWrong": "The password is incorrect",
+    "submit": "Change password",
+    "changed": "Password changed. Your other devices were signed out."
+  },
+  "email": {
+    "title": "Email address",
+    "description": "You sign in with {email}. We'll send a confirmation link to the new address; the change applies once you open it.",
+    "new": "New email address",
+    "submit": "Send confirmation link",
+    "sent": "Check {email} for a confirmation link. It expires in 24 hours. Your current address stays active until then.",
+    "inUse": "This email address is already in use."
+  },
+  "mfa": {
+    "title": "Two-factor authentication",
+    "on": "On",
+    "off": "Off",
+    "description": "Ask for a code from an authenticator app when you sign in.",
+    "platformRequired": "Required for platform accounts: it can't be turned off.",
+    "setupDescription": "Add this key to your authenticator app, then enter the 6-digit code it shows.",
+    "enable": "Set up two-factor authentication",
+    "enabled": "Two-factor authentication is on",
+    "done": "I saved my codes",
+    "disable": "Turn off",
+    "disabled": "Two-factor authentication is off",
+    "disableTitle": "Turn off two-factor authentication?",
+    "disableDescription": "Confirm with your password and a current code. Your recovery codes stop working.",
+    "disableWrong": "The password or code is incorrect."
+  },
+  "sessions": {
+    "title": "Where you're signed in",
+    "description": "Sign out a device you don't recognise, or everywhere at once.",
+    "loadFailed": "Couldn't load your sessions",
+    "empty": "No active sessions",
+    "device": "{browser} on {os}",
+    "unknownDevice": "Unknown device",
+    "current": "This device",
+    "meta": "{ip} · active {when}",
+    "revoke": "Sign out",
+    "revokeNamed": "Sign out {device}",
+    "revoked": "Device signed out",
+    "revokeTitle": "Sign out this device?",
+    "revokeDescription": "{device} will need to sign in again.",
+    "signOutAll": "Sign out everywhere",
+    "signOutAllTitle": "Sign out everywhere?",
+    "signOutAllDescription": "Every device, including this one, will need to sign in again."
+  }
+}

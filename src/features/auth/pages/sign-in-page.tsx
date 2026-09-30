@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/lib/auth/auth-provider';
+import { returnPath } from '@/lib/auth/guards';
 import { AuthHeading } from '../components/auth-card';
 import { MfaEnrollment } from '../components/mfa-enrollment';
 import { problemMessage } from '../problem-message';
@@ -28,12 +29,12 @@ export function SignInPage() {
   const { startSession, expired } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: string } | null)?.from ?? '/';
+  const from = returnPath(location.state);
   const [step, setStep] = useState<Step>({ kind: 'credentials' });
 
   const finish = (accessToken: string) => {
     startSession(accessToken);
-    void navigate(from.startsWith('/') && !from.startsWith('//') ? from : '/', { replace: true });
+    void navigate(from, { replace: true });
   };
 
   if (step.kind === 'mfa')
@@ -96,6 +97,12 @@ function CredentialsStep({
         <Button type="submit" size="lg" loading={login.isPending}>
           {t('signIn.submit')}
         </Button>
+        <p className="text-center text-body text-fg-muted">
+          {t('signIn.noAccount')}{' '}
+          <Link to="/sign-up" className="text-link underline underline-offset-4">
+            {t('signIn.createWorkspace')}
+          </Link>
+        </p>
       </form>
     </>
   );

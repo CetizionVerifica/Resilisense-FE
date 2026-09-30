@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router';
 import { Button } from '@/components/ui/button';
+import { useApplyProfilePreferences } from '@/lib/auth/preferences';
 import { CommandPalette, useCommandPaletteShortcut } from './command-palette';
+import { ImpersonationBanner } from './impersonation-banner';
 import { NotificationBell } from './notification-bell';
 import { Sidebar } from './sidebar';
 import { UserMenu } from './user-menu';
@@ -26,6 +28,7 @@ export function AppShell() {
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useCommandPaletteShortcut();
+  useApplyProfilePreferences();
 
   const toggle = () =>
     setCollapsed((c) => {
@@ -59,40 +62,43 @@ export function AppShell() {
       </SheetPrimitive.Root>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-surface px-3 lg:px-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            aria-label={t('nav.open')}
-            onClick={() => setMobileOpen(true)}
-          >
-            <Menu aria-hidden />
-          </Button>
-          <WorkspaceSwitcher />
-          <div className="ms-auto flex items-center gap-1">
-            <Button
-              variant="secondary"
-              className="hidden w-56 justify-start text-fg-muted md:inline-flex"
-              onClick={() => setPaletteOpen(true)}
-            >
-              <Search aria-hidden />
-              <span>{t('command.open')}</span>
-              <kbd className="ms-auto rounded-sm border border-border px-1.5 font-mono text-small">⌘K</kbd>
-            </Button>
+        <div className="sticky top-0 z-30">
+          <ImpersonationBanner />
+          <header className="flex h-14 items-center gap-2 border-b border-border bg-surface px-3 lg:px-4">
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
-              aria-label={t('command.open')}
-              onClick={() => setPaletteOpen(true)}
+              className="lg:hidden"
+              aria-label={t('nav.open')}
+              onClick={() => setMobileOpen(true)}
             >
-              <Search aria-hidden />
+              <Menu aria-hidden />
             </Button>
-            <NotificationBell />
-            <UserMenu />
-          </div>
-        </header>
+            <WorkspaceSwitcher />
+            <div className="ms-auto flex items-center gap-1">
+              <Button
+                variant="secondary"
+                className="hidden w-56 justify-start text-fg-muted md:inline-flex"
+                onClick={() => setPaletteOpen(true)}
+              >
+                <Search aria-hidden />
+                <span>{t('command.open')}</span>
+                <kbd className="ms-auto rounded-sm border border-border px-1.5 font-mono text-small">⌘K</kbd>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                aria-label={t('command.open')}
+                onClick={() => setPaletteOpen(true)}
+              >
+                <Search aria-hidden />
+              </Button>
+              <NotificationBell />
+              <UserMenu />
+            </div>
+          </header>
+        </div>
         <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[1440px] flex-1 p-4 outline-none lg:p-8">
           <Outlet />
         </main>

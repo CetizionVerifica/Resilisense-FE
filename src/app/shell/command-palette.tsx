@@ -1,10 +1,12 @@
-import { Home, LogOut, Moon, Sun } from 'lucide-react';
+import { Home, LogOut, Moon, Settings, Sun, UserPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/lib/auth/auth-provider';
+import { usePermission } from '@/lib/auth/me';
+import { useQuickPreferences } from '@/lib/auth/preferences';
 import { useTheme } from '@/lib/theme';
 
 /** ⌘K / Ctrl K command palette (02 §3): navigate and run global actions. */
@@ -12,7 +14,9 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { signOut } = useAuth();
-  const { resolved, setPreference } = useTheme();
+  const { resolved } = useTheme();
+  const { setTheme } = useQuickPreferences();
+  const canManageUsers = usePermission('org:manage-users');
 
   const run = (fn: () => void) => () => {
     onOpenChange(false);
@@ -32,9 +36,19 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
                 <Home aria-hidden />
                 {t('nav.home')}
               </CommandItem>
+              <CommandItem onSelect={run(() => void navigate('/settings/profile'))}>
+                <Settings aria-hidden />
+                {t('nav.settings')}
+              </CommandItem>
             </CommandGroup>
             <CommandGroup heading={t('command.actions')}>
-              <CommandItem onSelect={run(() => setPreference(resolved === 'dark' ? 'light' : 'dark'))}>
+              {canManageUsers ? (
+                <CommandItem onSelect={run(() => void navigate('/settings/members?invite=1'))}>
+                  <UserPlus aria-hidden />
+                  {t('command.invite')}
+                </CommandItem>
+              ) : null}
+              <CommandItem onSelect={run(() => setTheme(resolved === 'dark' ? 'light' : 'dark'))}>
                 {resolved === 'dark' ? <Sun aria-hidden /> : <Moon aria-hidden />}
                 {resolved === 'dark' ? t('theme.useLight') : t('theme.useDark')}
               </CommandItem>

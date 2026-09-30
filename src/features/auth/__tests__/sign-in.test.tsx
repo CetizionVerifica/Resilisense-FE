@@ -13,11 +13,11 @@ async function signIn(email: string, password = MOCK_PASSWORD) {
 
 describe('sign-in (M01 §4.1)', () => {
   it('redirects anonymous users to /sign-in and back to the requested page after signing in', async () => {
-    const { router } = renderApp('/');
+    const { router } = renderApp('/settings/security?from=link');
     await waitFor(() => expect(router.state.location.pathname).toBe('/sign-in'));
     await signIn('alice@example.com');
-    expect(await screen.findByRole('heading', { name: 'Welcome, Alice Admin' })).toBeInTheDocument();
-    expect(router.state.location.pathname).toBe('/');
+    await waitFor(() => expect(router.state.location.pathname).toBe('/settings/security'));
+    expect(router.state.location.search).toBe('?from=link');
   });
 
   it('shows a generic error for wrong credentials', async () => {

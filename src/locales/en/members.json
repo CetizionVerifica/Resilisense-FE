@@ -1,0 +1,142 @@
+{
+  "title": "Members",
+  "description": "People who can access {workspace}, their role and what they can see.",
+  "forbidden": {
+    "title": "You can't manage members",
+    "description": "Ask a workspace owner or admin to invite people or change roles."
+  },
+  "tab": {
+    "members": "Members",
+    "invitations": "Pending invitations"
+  },
+  "filters": "Filter members",
+  "filter": {
+    "allRoles": "All roles",
+    "allStatuses": "All statuses",
+    "clear": "Clear filters"
+  },
+  "column": {
+    "member": "Member",
+    "email": "Email",
+    "role": "Role",
+    "scope": "Access",
+    "status": "Status",
+    "lastActive": "Last active",
+    "sent": "Sent",
+    "actions": "Actions"
+  },
+  "you": "You",
+  "never": "Never",
+  "status": {
+    "active": "Active",
+    "deactivated": "Deactivated",
+    "disabled": "Account disabled"
+  },
+  "scope": {
+    "all": "Whole workspace",
+    "limited": "{companies, plural, one {# company} other {# companies}}, {projects, plural, one {# project} other {# projects}}"
+  },
+  "loadFailed": "Couldn't load members",
+  "loadMore": "Load more",
+  "empty": {
+    "title": "No members yet",
+    "description": "Invite colleagues to answer questions, upload evidence or review results.",
+    "filteredTitle": "No members match these filters",
+    "filteredDescription": "Try another role or status."
+  },
+  "actions": {
+    "for": "Actions for {name}",
+    "changeRole": "Change role…",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "remove": "Remove from workspace"
+  },
+  "changeRole": {
+    "title": "Change role of {name}",
+    "description": "The new role applies to their next request.",
+    "submit": "Change role"
+  },
+  "confirm": {
+    "deactivate": {
+      "title": "Deactivate {name}?",
+      "description": "{name} ({email}) loses access to this workspace until reactivated. Their answers and files stay.",
+      "confirm": "Deactivate"
+    },
+    "reactivate": {
+      "title": "Reactivate {name}?",
+      "description": "{name} ({email}) gets back their previous role in this workspace.",
+      "confirm": "Reactivate"
+    },
+    "remove": {
+      "title": "Remove {name} from this workspace?",
+      "description": "{name} ({email}), a member since {since}, loses access immediately. Their past answers and files stay. To bring them back, invite them again.",
+      "confirm": "Remove"
+    },
+    "revoke": {
+      "title": "Revoke this invitation?",
+      "description": "The link sent to {email} stops working."
+    }
+  },
+  "toast": {
+    "roleChanged": "{name} is now {role}",
+    "deactivated": "{name} was deactivated",
+    "reactivated": "{name} was reactivated",
+    "removed": "{name} was removed",
+    "resent": "Invitation sent again to {email}",
+    "revoked": "Invitation to {email} revoked"
+  },
+  "error": {
+    "forbidden": "You can't make this change. You can only grant roles up to your own, and you can't change your own role.",
+    "lastOwner": "A workspace must keep at least one owner. Make someone else owner first.",
+    "limit": "Your plan's user limit is reached. Remove members or upgrade the plan to invite more.",
+    "notFound": "This member or invitation no longer exists. Refresh the list."
+  },
+  "invitation": {
+    "expired": "Expired",
+    "expires": "Expires {date}",
+    "resend": "Resend",
+    "resendFor": "Resend invitation to {email}",
+    "revoke": "Revoke",
+    "revokeFor": "Revoke invitation to {email}",
+    "loadFailed": "Couldn't load invitations",
+    "emptyTitle": "No pending invitations",
+    "emptyDescription": "Accepted invitations appear under Members; new ones show here until accepted."
+  },
+  "invite": {
+    "open": "Invite people",
+    "title": "Invite people",
+    "description": "Each person gets an email with a link that's valid for 7 days.",
+    "byEmail": "By email",
+    "byCsv": "Upload CSV",
+    "emails": "Email addresses",
+    "emailsHint": "Separate addresses with commas or new lines (up to {max}).",
+    "invalidEmails": "One or more addresses aren't valid email addresses",
+    "tooMany": "You can invite up to {max} people at once",
+    "send": "{count, plural, =0 {Send invitations} one {Send # invitation} other {Send # invitations}}",
+    "scopeNote": "Invitees get access to the whole workspace. Limiting access to specific companies or projects arrives with Companies and Projects."
+  },
+  "roleHelp": {
+    "workspace_owner": "Full control, including billing and deleting the workspace.",
+    "workspace_admin": "Manages companies, people, projects, surveys and suppliers.",
+    "contributor": "Answers assigned questions, uploads evidence and enters KPI data.",
+    "viewer": "Read-only access.",
+    "auditor": "Read-only access including evidence and the audit trail, for external assurance."
+  },
+  "csv": {
+    "description": "One person per row, up to {max} rows. Separate several company or project ids with ;",
+    "template": "Download template",
+    "file": "CSV file",
+    "required": "Choose a CSV file",
+    "invalid": "The file has errors. Fix them and upload it again.",
+    "lineError": "Line {line}: {message}",
+    "submit": "Upload and invite"
+  },
+  "results": {
+    "title": "Invitation results",
+    "summary": "{invited, plural, one {# invitation sent} other {# invitations sent}}{skipped, plural, =0 {} one {, # already a member} other {, # already members}}.",
+    "invited": "Invited",
+    "already_member": "Already a member",
+    "more": "Invite more",
+    "done": "Done"
+  }
+}

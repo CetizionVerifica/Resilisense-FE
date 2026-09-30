@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { authControllerLogout } from '@/api/generated/auth/auth';
+import { authControllerEndImpersonation, authControllerLogout } from '@/api/generated/auth/auth';
 import { refreshSession, setSessionExpiredHandler } from '../api-client';
 import { authToken } from '../auth-token';
 
@@ -13,6 +13,8 @@ interface AuthContextValue {
   /** Stores the access token of a session issued by login / MFA / workspace switch. */
   startSession: (accessToken: string) => void;
   signOut: (opts?: { allDevices?: boolean }) => Promise<void>;
+  /** Ends a platform owner's impersonation and returns to their own session (refresh cookie). */
+  endImpersonation: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -50,8 +52,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const startSession = useCallback(
     (accessToken: string) => {
       setExpired(false);
-      queryClient.clear();
       authToken.set(accessToken);
+      // Reset (not clear): mounted observers stay attached and refetch as the new session /
+      // workspace, and nothing cached for the previous one survives (US-01-3).
+      void queryClient.resetQueries();
     },
     [queryClient],
   );
@@ -68,7 +72,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [queryClient],
   );
 
-  const value = useMemo(() => ({ status, expired, startSession, signOut }), [status, expired, startSession, signOut]);
+  const endImpersonation = useCallback(async () => {
+    await authControllerEndImpersonation();
+    // The impersonation token was access-only; the refresh cookie still belongs to the owner.
+    if (await refreshSession()) await queryClient.resetQueries();
+    else queryClient.clear();
+  }, [queryClient]);
+
+  const value = useMemo(
+    () => ({ status, expired, startSession, signOut, endImpersonation }),
+    [status, expired, startSession, signOut, endImpersonation],
+  );
   return <AuthContext value={value}>{children}</AuthContext>;
 }
 

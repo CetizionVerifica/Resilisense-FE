@@ -46,8 +46,8 @@ describe('app shell (02 §3)', () => {
     screen.getByRole('button', { name: 'Account menu' }).focus();
     await user.keyboard('{Enter}');
     await screen.findByRole('menu');
-    // keyboard-opened menus focus the first item: Theme
-    await user.keyboard('{ArrowRight}'); // open submenu → System
+    // keyboard-opened menus focus the first item (Account settings); next is Theme
+    await user.keyboard('{ArrowDown}{ArrowRight}'); // open submenu → System
     await screen.findByRole('menuitemradio', { name: 'System' });
     await user.keyboard('{ArrowDown}{ArrowDown}{Enter}'); // Light → Dark
     expect(document.documentElement.dataset.theme).toBe('dark');
