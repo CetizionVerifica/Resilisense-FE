@@ -1,4 +1,4 @@
-import { Home, type LucideIcon } from 'lucide-react';
+import { Home, type LucideIcon, Settings } from 'lucide-react';
 import { type Permission } from '@/lib/auth/me';
 
 export interface NavItem {
@@ -9,6 +9,8 @@ export interface NavItem {
   permission?: Permission;
   /** Entitlement module; non-entitled items show the locked-module panel (M01 §2, M02). */
   module?: string;
+  /** Active only on the exact path (default); false keeps it active on sub-pages. */
+  end?: boolean;
 }
 
 export interface NavGroup {
@@ -22,4 +24,5 @@ export interface NavGroup {
  */
 export const NAV: NavGroup[] = [
   { labelKey: 'nav.group.workspace', items: [{ to: '/', labelKey: 'nav.home', icon: Home }] },
+  { labelKey: 'nav.group.admin', items: [{ to: '/settings', labelKey: 'nav.settings', icon: Settings, end: false }] },
 ];

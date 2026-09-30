@@ -17,3 +17,10 @@ export async function signIn(page: Page, email = 'alice@example.com'): Promise<v
   await page.getByLabel('Password').fill(PASSWORD);
   await page.getByRole('button', { name: 'Sign in' }).click();
 }
+
+/** Client-side navigation to settings (a full reload would drop the in-memory session and MSW state). */
+export async function openSettings(page: Page, tab: 'Profile' | 'Security' | 'Members' = 'Profile'): Promise<void> {
+  await page.getByRole('button', { name: 'Account menu' }).click();
+  await page.getByRole('menuitem', { name: 'Account settings' }).click();
+  await page.getByRole('navigation', { name: 'Settings sections' }).getByRole('link', { name: tab }).click();
+}

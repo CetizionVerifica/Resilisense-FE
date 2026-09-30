@@ -41,7 +41,7 @@ export function Sidebar({
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  end
+                  end={item.end ?? true}
                   onClick={onNavigate}
                   title={collapsed ? t(item.labelKey) : undefined}
                   className={({ isActive }) =>

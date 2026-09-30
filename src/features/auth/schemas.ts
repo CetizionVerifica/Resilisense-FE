@@ -27,7 +27,7 @@ export const emailSchema = z.object({
 });
 export type EmailValues = z.infer<typeof emailSchema>;
 
-const newPassword = z.string().min(MIN_PASSWORD, 'auth:password.tooShort').max(256);
+export const newPassword = z.string().min(MIN_PASSWORD, 'auth:password.tooShort').max(256);
 
 export const resetSchema = z
   .object({ password: newPassword, confirm: z.string() })
@@ -39,3 +39,16 @@ export const acceptNewUserSchema = z.object({
   password: newPassword,
 });
 export type AcceptNewUserValues = z.infer<typeof acceptNewUserSchema>;
+
+export const signUpSchema = z.object({
+  name: z.string().trim().min(1, 'validation.required').max(120),
+  email: z.string().trim().min(1, 'validation.required').pipe(z.email('validation.email')),
+  password: newPassword,
+  workspaceName: z.string().trim().min(2, 'validation.required').max(120),
+});
+export type SignUpValues = z.infer<typeof signUpSchema>;
+
+export const termsSchema = z.object({
+  accepted: z.literal(true, { error: 'auth:terms.required' }),
+});
+export type TermsValues = z.infer<typeof termsSchema>;

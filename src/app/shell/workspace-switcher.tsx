@@ -1,4 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { Building2, ChevronsUpDown } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -24,14 +23,11 @@ export function WorkspaceSwitcher() {
   const { t } = useTranslation();
   const { data: me } = useMe();
   const { startSession } = useAuth();
-  const queryClient = useQueryClient();
   const [query, setQuery] = useState('');
   const switchWorkspace = useMeControllerSwitchWorkspace({
     mutation: {
-      onSuccess: (session) => {
-        startSession(session.accessToken);
-        void queryClient.invalidateQueries();
-      },
+      // startSession resets (and refetches) every query for the new workspace.
+      onSuccess: (session) => startSession(session.accessToken),
       onError: () => toast.error(t('workspace.switchFailed')),
     },
   });

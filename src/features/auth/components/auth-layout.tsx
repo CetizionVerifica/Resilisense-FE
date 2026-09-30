@@ -1,10 +1,11 @@
 import { CheckCircle2 } from 'lucide-react';
+import { type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router';
 import { Logo } from '@/app/shell/logo';
 
 /** Minimal shell for public auth pages (M01 §9, 02 §3): brand panel on the start side, form on the end side. */
-export function AuthLayout() {
+export function AuthLayout({ children }: { children?: ReactNode }) {
   const { t } = useTranslation('auth');
   const points = ['layout.point1', 'layout.point2', 'layout.point3'] as const;
   return (
@@ -26,9 +27,7 @@ export function AuthLayout() {
       </aside>
       <main className="flex flex-col items-center justify-center p-6 sm:p-10">
         <Logo className="mb-8 text-fg lg:hidden" />
-        <div className="w-full max-w-sm">
-          <Outlet />
-        </div>
+        <div className="w-full max-w-sm">{children ?? <Outlet />}</div>
       </main>
     </div>
   );

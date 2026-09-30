@@ -17,6 +17,22 @@ export function setSessionExpiredHandler(handler: () => void): void {
   onSessionExpired = handler;
 }
 
+let impersonating = false;
+let onImpersonationExpired: (() => void) | null = null;
+
+/**
+ * Impersonation tokens are access-only (M01 §7.1) while the refresh cookie belongs to the platform
+ * owner. On a 401 during impersonation a silent refresh would continue *as the owner* behind the
+ * impersonated user's screen, so the auth provider ends the impersonation cleanly instead.
+ */
+export function setImpersonating(active: boolean): void {
+  impersonating = active;
+}
+
+export function setImpersonationExpiredHandler(handler: () => void): void {
+  onImpersonationExpired = handler;
+}
+
 /**
  * Silent refresh via the httpOnly cookie. Single-flight: concurrent 401s share one refresh
  * (the API rotates refresh tokens and treats reuse as theft).
@@ -59,7 +75,8 @@ export async function apiFetch<T>(url: string, init: RequestInit = {}): Promise<
   let res = await send(url, init);
   const path = url.split('?')[0] ?? url;
   if (res.status === 401 && authToken.get() && !NO_REFRESH.includes(path)) {
-    if (await refreshSession()) res = await send(url, init);
+    if (impersonating) onImpersonationExpired?.();
+    else if (await refreshSession()) res = await send(url, init);
     else onSessionExpired?.();
   }
   if (res.status === 204) return undefined as T;
