@@ -23,9 +23,9 @@ npm test                # Vitest unit/component tests
 npm run test:e2e        # Playwright (+ axe) against dev server with MSW or staging API
 npm run storybook       # design-system workbench (a11y, RTL, dark-mode toolbars)
 npm run i18n:extract    # update locales/en/*.json; CI fails on missing en keys
-npm run build           # static build to dist/ (deployed to Cloudflare Pages by CI — no AWS)
+npm run build           # static build to dist/ (CI packages it into the `web` image — Caddy — deployed with Kamal to the VPS)
 ```
-Never commit `dist/`/`build/`, never use `--force` installs, never ship public source maps. **No AWS** for hosting or deployment (owner decision, ADR-011): the SPA and the public survey app are deployed to Cloudflare Pages; don't add S3/CloudFront/Amplify scripts or AWS SDKs.
+Never commit `dist/`/`build/`, never use `--force` installs, never ship public source maps. **No AWS — self-managed VPS** (owner decision, ADR-011): the SPA and the public survey app ship as a static `web` image (Caddy) deployed with Kamal to the VPS, behind Cloudflare; don't add S3/CloudFront/Amplify scripts or AWS SDKs. Use hashed asset filenames and `Cache-Control: immutable` so Cloudflare can cache them.
 
 ## Architecture rules
 
