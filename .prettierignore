@@ -1,0 +1,11 @@
+dist
+coverage
+storybook-static
+playwright-report
+test-results
+node_modules
+src/api/generated
+
+api/openapi.json
+package-lock.json
+docs/revamp

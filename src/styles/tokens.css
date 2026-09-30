@@ -1,0 +1,106 @@
+/*
+ * ResiliSense design tokens — docs/revamp/02-design-system.md §2.
+ * Components use these via Tailwind utilities (bg-surface, text-muted, …); never raw hex.
+ * Dark: [data-theme="dark"], or the OS preference unless the user forced light.
+ */
+:root {
+  color-scheme: light;
+  --bg-canvas: #f5f6f8;
+  --bg-surface: #ffffff;
+  --bg-subtle: #e9ecf0;
+  --bg-sidebar: #1e222a;
+  --border: #d3d8e0;
+  --border-strong: #8792a3;
+  --text-primary: #1e222a;
+  --text-secondary: #475062;
+  --text-muted: #5b6679;
+  --primary: #475062;
+  --on-primary: #ffffff;
+  --primary-hover: #3a4150;
+  --accent: #d8882a;
+  --on-accent: #1e222a;
+  --accent-text: #945515;
+  --link: #1f63b5;
+  --focus-ring: #1f63b5;
+  --success: #16784a;
+  --success-subtle: #e7f6ee;
+  --warning: #b54708;
+  --warning-subtle: #fef3e2;
+  --danger: #b42318;
+  --danger-subtle: #fdecea;
+  --info: #1f63b5;
+  --info-subtle: #eaf2fb;
+  /* sidebar is dark slate in both themes (02 §2.2) */
+  --sidebar-text: #d3d8e0;
+  --sidebar-text-muted: #8792a3;
+  --sidebar-hover: #2c323d;
+  --elev-xs: 0 1px 2px rgb(16 24 40 / 0.06);
+  --elev-md: 0 4px 12px rgb(16 24 40 / 0.1);
+  --elev-lg: 0 12px 32px rgb(16 24 40 / 0.16);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg-canvas: #13161b;
+  --bg-surface: #1c2029;
+  --bg-subtle: #252a35;
+  --bg-sidebar: #0f1216;
+  --border: #2c323d;
+  --border-strong: #6b7689;
+  --text-primary: #e6e9ee;
+  --text-secondary: #b0b8c5;
+  --text-muted: #8792a3;
+  --primary: #e6e9ee;
+  --on-primary: #1c2029;
+  --primary-hover: #ffffff;
+  --accent: #e49b3f;
+  --on-accent: #13161b;
+  --accent-text: #e49b3f;
+  --link: #6fa8e8;
+  --focus-ring: #6fa8e8;
+  --success: #4ade80;
+  --success-subtle: #12301f;
+  --warning: #fbbf24;
+  --warning-subtle: #33260a;
+  --danger: #f87171;
+  --danger-subtle: #3a1614;
+  --info: #6fa8e8;
+  --info-subtle: #13263d;
+  --elev-xs: none;
+  --elev-md: 0 0 0 1px var(--border);
+  --elev-lg: 0 0 0 1px var(--border);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg-canvas: #13161b;
+    --bg-surface: #1c2029;
+    --bg-subtle: #252a35;
+    --bg-sidebar: #0f1216;
+    --border: #2c323d;
+    --border-strong: #6b7689;
+    --text-primary: #e6e9ee;
+    --text-secondary: #b0b8c5;
+    --text-muted: #8792a3;
+    --primary: #e6e9ee;
+    --on-primary: #1c2029;
+    --primary-hover: #ffffff;
+    --accent: #e49b3f;
+    --on-accent: #13161b;
+    --accent-text: #e49b3f;
+    --link: #6fa8e8;
+    --focus-ring: #6fa8e8;
+    --success: #4ade80;
+    --success-subtle: #12301f;
+    --warning: #fbbf24;
+    --warning-subtle: #33260a;
+    --danger: #f87171;
+    --danger-subtle: #3a1614;
+    --info: #6fa8e8;
+    --info-subtle: #13263d;
+    --elev-xs: none;
+    --elev-md: 0 0 0 1px var(--border);
+    --elev-lg: 0 0 0 1px var(--border);
+  }
+}

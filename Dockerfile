@@ -1,39 +1,20 @@
-# Build stage
-FROM node:18-alpine as build
-
-# Set working directory
+# `web` image (ADR-011): static SPA served by Caddy behind kamal-proxy + Cloudflare. No AWS.
+FROM node:22-alpine AS build
 WORKDIR /app
-
-# Copy package.json and package-lock.json
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install -f
-
-# Copy all files
+COPY package.json package-lock.json orval.config.ts ./
+COPY api ./api
+COPY src/lib/api-client.ts src/lib/auth-token.ts src/lib/problem.ts ./src/lib/
+RUN npm ci --no-audit --no-fund
 COPY . .
-
-# Build app
+# API origin baked into the bundle, e.g. https://api.resilisense.org (empty = same origin).
+ARG VITE_API_BASE_URL=""
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL} VITE_API_MOCKS=0
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine
-
-# Install dependencies
-RUN apk add --no-cache bash
-
-# Copy built files from build stage to nginx serve directory
-COPY --from=build /app/build /usr/share/nginx/html
-
-# Copy configuration script
-COPY ./nginx-config.sh /docker-entrypoint.d/
-RUN chmod +x /docker-entrypoint.d/nginx-config.sh
-
-# Expose port 80
+FROM caddy:2-alpine
+COPY Caddyfile /etc/caddy/Caddyfile
+COPY --from=build /app/dist /srv
+# Used in the CSP connect-src; set per environment by Kamal.
+ENV API_ORIGIN=""
 EXPOSE 80
-
-# Environment variable for backend URL
-ENV EC2_BACKEND_URL=http://localhost:8080
-
-# Start nginx with our custom script
-CMD ["/docker-entrypoint.d/nginx-config.sh"]
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://127.0.0.1/healthz || exit 1

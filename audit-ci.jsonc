@@ -1,0 +1,7 @@
+{
+  // Production dependency audit gate (CI). Add reviewed advisories to the allowlist with a reason.
+  "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
+  "high": true,
+  "skip-dev": true,
+  "allowlist": [],
+}

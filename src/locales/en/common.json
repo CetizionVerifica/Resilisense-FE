@@ -1,0 +1,92 @@
+{
+  "action": {
+    "retry": "Try again",
+    "reload": "Reload page",
+    "close": "Close",
+    "back": "Back",
+    "backToSignIn": "Back to sign in"
+  },
+  "state": {
+    "loading": "Loading…"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "The page could not be displayed. Reload to try again; if it keeps happening, contact support."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The link may be broken or the page may have moved.",
+    "home": "Go to home"
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Enter a valid email address"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "open": "Open navigation",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar",
+    "skipToContent": "Skip to content",
+    "home": "Home",
+    "group": {
+      "workspace": "Workspace"
+    }
+  },
+  "workspace": {
+    "label": "Workspaces",
+    "switch": "Switch workspace",
+    "search": "Search workspaces",
+    "none": "No workspace",
+    "noMatch": "No workspace matches your search",
+    "switchFailed": "Could not switch workspace. Try again."
+  },
+  "role": {
+    "workspace_owner": "Owner",
+    "workspace_admin": "Admin",
+    "contributor": "Contributor",
+    "viewer": "Viewer",
+    "auditor": "Auditor",
+    "partner_admin": "Partner"
+  },
+  "command": {
+    "open": "Search…",
+    "title": "Command palette",
+    "placeholder": "Type a command or search",
+    "empty": "No results",
+    "navigate": "Go to",
+    "actions": "Actions"
+  },
+  "notifications": {
+    "label": "Notifications",
+    "empty": "You're all caught up."
+  },
+  "user": {
+    "menu": "Account menu",
+    "signOut": "Sign out"
+  },
+  "theme": {
+    "label": "Theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "useLight": "Switch to light theme",
+    "useDark": "Switch to dark theme"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "en-XA": "Pseudo-locale (testing)"
+  },
+  "home": {
+    "welcome": "Welcome, {name}",
+    "empty": {
+      "title": "Your workspace is ready",
+      "description": "Projects, assessments and reports will appear here as you start working."
+    },
+    "noWorkspace": {
+      "title": "You're not in a workspace yet",
+      "description": "Ask a workspace admin to invite you, or open the invitation link from your email."
+    }
+  }
+}
