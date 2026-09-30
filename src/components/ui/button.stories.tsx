@@ -1,0 +1,40 @@
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Plus } from 'lucide-react';
+import { Button } from './button';
+
+const meta = { title: 'UI/Button', component: Button, args: { children: 'Save changes' } } satisfies Meta<
+  typeof Button
+>;
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Primary: Story = {};
+export const Variants: Story = {
+  render: (args) => (
+    <div className="flex flex-wrap gap-3">
+      <Button {...args} variant="primary" />
+      <Button {...args} variant="secondary" />
+      <Button {...args} variant="ghost" />
+      <Button {...args} variant="destructive">
+        Delete project
+      </Button>
+      <Button {...args} variant="link">
+        Learn more
+      </Button>
+    </div>
+  ),
+};
+export const Sizes: Story = {
+  render: (args) => (
+    <div className="flex items-center gap-3">
+      <Button {...args} size="sm" />
+      <Button {...args} size="md" />
+      <Button {...args} size="lg" />
+      <Button {...args} size="icon" aria-label="Add">
+        <Plus aria-hidden />
+      </Button>
+    </div>
+  ),
+};
+export const Loading: Story = { args: { loading: true } };
+export const Disabled: Story = { args: { disabled: true } };

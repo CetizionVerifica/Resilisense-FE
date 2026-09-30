@@ -4,9 +4,8 @@ storybook-static
 coverage
 playwright-report
 test-results
-*.local
-.env
-.env.*
+.git
+.env*
 !.env.example
-# generated from api/openapi.json by orval (npm run api:generate, runs on install)
+docs
 src/api/generated

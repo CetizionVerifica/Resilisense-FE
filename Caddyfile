@@ -1,0 +1,43 @@
+# Serves the built SPA (dist/ → /srv). TLS terminates at kamal-proxy / Cloudflare (ADR-011).
+{
+	admin off
+	auto_https off
+}
+
+:80 {
+	root * /srv
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+		Cross-Origin-Opener-Policy "same-origin"
+		# No inline scripts (ADR-010). Inline styles are allowed: Radix and Sonner inject them.
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' {$API_ORIGIN}; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+		-Server
+	}
+
+	# Hashed assets are immutable (Cloudflare caches them); index.html is always revalidated.
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+	@html not path /assets/*
+	header @html Cache-Control "no-cache"
+
+	# handle blocks are mutually exclusive and evaluated before the SPA fallback rewrite.
+	handle /healthz {
+		respond 200
+	}
+
+	# Source maps are never shipped; refuse them explicitly anyway.
+	@maps path *.map
+	handle @maps {
+		respond 404
+	}
+
+	handle {
+		try_files {path} /index.html
+		file_server
+	}
+}
