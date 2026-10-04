@@ -23,7 +23,7 @@ import {
  * In-memory M01 API (docs/revamp/modules/M01 §8) with the same shapes and problem codes as
  * CSR_BE. State resets with `resetMockState()` (tests) or a page reload (browser).
  */
-const problem = (status: number, type: string, title: string, extra: Record<string, unknown> = {}) =>
+export const problem = (status: number, type: string, title: string, extra: Record<string, unknown> = {}) =>
   HttpResponse.json(
     { type: `https://resilisense.org/problems/${type}`, title, status, ...extra },
     { status, headers: { 'content-type': 'application/problem+json' } },

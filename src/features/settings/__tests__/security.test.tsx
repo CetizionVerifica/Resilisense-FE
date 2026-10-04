@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import { http } from 'msw';
 import { MOCK_MFA_CODE, MOCK_PASSWORD } from '@/mocks/data';
+import { problem } from '@/mocks/handlers';
 import { renderSignedIn } from '@/test/session';
 import { server } from '@/test/server';
 
@@ -84,7 +85,7 @@ describe('security settings (M01 §9)', () => {
   });
 
   it('shows an error with retry when sessions fail to load', { timeout: 15_000 }, async () => {
-    server.use(http.get('*/v1/me/sessions', () => HttpResponse.json({}, { status: 500 })));
+    server.use(http.get('*/v1/me/sessions', () => problem(500, 'internal_error', 'Internal server error')));
     const { user } = await renderSignedIn('/settings/security');
     // 5xx is retried twice with backoff before the error state shows
     expect(

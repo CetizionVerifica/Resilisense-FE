@@ -1,10 +1,14 @@
 import { http, HttpResponse } from 'msw';
+import { ignoreContract } from '@/test/contract';
 import { server } from '@/test/server';
 import { apiFetch, refreshSession, setSessionExpiredHandler } from './api-client';
 import { authToken } from './auth-token';
 import { ApiError } from './problem';
 
 describe('apiFetch', () => {
+  // Exercises the mutator against a made-up /v1/ping, not a real operation.
+  beforeEach(ignoreContract);
+
   it('sends the in-memory bearer token and parses JSON', async () => {
     authToken.set('t1');
     server.use(
