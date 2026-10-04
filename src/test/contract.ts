@@ -3,8 +3,8 @@ import addFormats from 'ajv-formats';
 import contract from '../../api/openapi.json';
 
 /**
- * Mock contract check (CI test plan A3): every MSW response a test receives, and every JSON request
- * body the app sends, is checked against the pinned backend contract in api/openapi.json — the same
+ * Mock contract check (CI test plan A3): every mocked API response a test receives, and every JSON
+ * request body the app sends, is checked against the pinned backend contract in api/openapi.json — the same
  * document the generated client comes from. A hand-written mock that returns a status, field or
  * shape the API does not, or a form that posts a body the API would reject, fails the test that
  * caused it (see setup.ts).
@@ -166,40 +166,41 @@ let ignored = false;
 const violations: ContractViolation[] = [];
 const pending = new Set<Promise<void>>();
 
-interface MockEvents {
-  on(type: 'response:mocked', listener: (event: { request: Request; response: Response }) => void): unknown;
-}
-
-/** Checks every request/response pair MSW mocks for the API (`/v1/…`). */
-export function recordContract(events: MockEvents): void {
-  events.on('response:mocked', ({ request, response }) => {
-    const { pathname } = new URL(request.url);
-    if (ignored || !pathname.startsWith('/v1/')) return;
-    checker ??= new ContractChecker(contract as unknown as OpenApiDoc);
-    const label = `${request.method} ${pathname}`;
-    const task = (async () => {
-      const [requestBody, responseBody] = await Promise.all([
-        request
-          .clone()
-          .text()
-          .catch(() => ''),
-        response.clone().text(),
-      ]);
+/**
+ * Checks every `/v1/…` call the app makes through `fetch` (all of which MSW answers in tests). It
+ * wraps the global fetch rather than listening to MSW events: by the time MSW emits them the app may
+ * already have read the request or response body, so it can no longer be cloned.
+ */
+export function recordContract(): void {
+  const original = globalThis.fetch;
+  globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    const isRequest = input instanceof Request;
+    const url = new URL(isRequest ? input.url : String(input), 'http://localhost');
+    const method = (init?.method ?? (isRequest ? input.method : 'GET')).toUpperCase();
+    const headers = new Headers(init?.headers ?? (isRequest ? input.headers : undefined));
+    const sent = typeof init?.body === 'string' ? init.body : '';
+    const response = await original(input, init);
+    if (ignored || !url.pathname.startsWith('/v1/')) return response;
+    const received = response.clone();
+    const task = received.text().then((raw) => {
+      checker ??= new ContractChecker(contract as unknown as OpenApiDoc);
       const problems = [
-        ...checker.checkRequest(request.method, pathname, request.headers.get('content-type') ?? '', requestBody),
+        ...checker.checkRequest(method, url.pathname, headers.get('content-type') ?? '', sent),
         ...checker.checkResponse(
-          request.method,
-          pathname,
-          response.status,
-          response.headers.get('content-type') ?? '',
-          responseBody,
+          method,
+          url.pathname,
+          received.status,
+          received.headers.get('content-type') ?? '',
+          raw,
         ),
       ];
-      for (const problem of problems) violations.push({ request: `${label} → ${response.status}`, problem });
-    })();
+      for (const problem of problems)
+        violations.push({ request: `${method} ${url.pathname} → ${received.status}`, problem });
+    });
     pending.add(task);
     void task.finally(() => pending.delete(task));
-  });
+    return response;
+  };
 }
 
 /**

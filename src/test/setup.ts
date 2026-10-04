@@ -8,7 +8,7 @@ import { server } from './server';
 
 beforeAll(async () => {
   server.listen({ onUnhandledFrame: 'error' });
-  recordContract(server.events);
+  recordContract();
   await initI18n('en');
 });
 afterEach(async () => {
