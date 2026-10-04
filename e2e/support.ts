@@ -3,6 +3,12 @@ import { expect, type Page } from '@playwright/test';
 
 /** WCAG 2.2 AA axe scan (02 §8: zero violations). */
 export async function expectNoA11yViolations(page: Page): Promise<void> {
+  // Toasts fade in: scan them once their transition ends, or axe measures a half-transparent colour.
+  await page
+    .locator('[data-sonner-toast]')
+    .evaluateAll((els) =>
+      Promise.all(els.flatMap((el) => el.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => null)))),
+    );
   const { violations } = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
     .analyze();
@@ -19,8 +25,16 @@ export async function signIn(page: Page, email = 'alice@example.com'): Promise<v
 }
 
 /** Client-side navigation to settings (a full reload would drop the in-memory session and MSW state). */
-export async function openSettings(page: Page, tab: 'Profile' | 'Security' | 'Members' = 'Profile'): Promise<void> {
+export async function openSettings(
+  page: Page,
+  tab: 'Profile' | 'Security' | 'Workspace' | 'Plan' | 'Members' = 'Profile',
+): Promise<void> {
   await page.getByRole('button', { name: 'Account menu' }).click();
   await page.getByRole('menuitem', { name: 'Account settings' }).click();
   await page.getByRole('navigation', { name: 'Settings sections' }).getByRole('link', { name: tab }).click();
+}
+
+/** Client-side navigation through the sidebar (keeps the in-memory session and MSW state). */
+export async function openNav(page: Page, name: string): Promise<void> {
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name }).click();
 }

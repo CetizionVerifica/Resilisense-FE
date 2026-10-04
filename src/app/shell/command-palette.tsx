@@ -1,10 +1,11 @@
-import { Home, LogOut, Moon, Settings, Sun, UserPlus } from 'lucide-react';
+import { Factory, Handshake, Home, LogOut, Moon, Plus, Settings, Sun, UserPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/lib/auth/auth-provider';
+import { useIsPartnerWorkspace, useWorkspaceReadOnly } from '@/lib/auth/entitlements';
 import { usePermission } from '@/lib/auth/me';
 import { useQuickPreferences } from '@/lib/auth/preferences';
 import { useTheme } from '@/lib/theme';
@@ -17,6 +18,10 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   const { resolved } = useTheme();
   const { setTheme } = useQuickPreferences();
   const canManageUsers = usePermission('org:manage-users');
+  const canSeeCompanies = usePermission('project:read');
+  const readOnly = useWorkspaceReadOnly();
+  const canCreateCompany = usePermission('company:create') && !readOnly;
+  const isPartner = useIsPartnerWorkspace();
 
   const run = (fn: () => void) => () => {
     onOpenChange(false);
@@ -36,12 +41,30 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
                 <Home aria-hidden />
                 {t('nav.home')}
               </CommandItem>
+              {canSeeCompanies ? (
+                <CommandItem onSelect={run(() => void navigate('/companies'))}>
+                  <Factory aria-hidden />
+                  {t('nav.companies')}
+                </CommandItem>
+              ) : null}
+              {isPartner ? (
+                <CommandItem onSelect={run(() => void navigate('/partner/clients'))}>
+                  <Handshake aria-hidden />
+                  {t('nav.partnerClients')}
+                </CommandItem>
+              ) : null}
               <CommandItem onSelect={run(() => void navigate('/settings/profile'))}>
                 <Settings aria-hidden />
                 {t('nav.settings')}
               </CommandItem>
             </CommandGroup>
             <CommandGroup heading={t('command.actions')}>
+              {canCreateCompany ? (
+                <CommandItem onSelect={run(() => void navigate('/companies?new=1'))}>
+                  <Plus aria-hidden />
+                  {t('command.addCompany')}
+                </CommandItem>
+              ) : null}
               {canManageUsers ? (
                 <CommandItem onSelect={run(() => void navigate('/settings/members?invite=1'))}>
                   <UserPlus aria-hidden />

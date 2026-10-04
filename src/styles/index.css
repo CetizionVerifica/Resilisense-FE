@@ -107,3 +107,19 @@
     }
   }
 }
+
+/* Toasts (sonner richColors) on our tokens: its default success green fails AA contrast on light. */
+:root [data-sonner-toaster][data-sonner-theme] {
+  --success-bg: var(--success-subtle);
+  --success-border: var(--success);
+  --success-text: var(--success);
+  --info-bg: var(--info-subtle);
+  --info-border: var(--info);
+  --info-text: var(--info);
+  --warning-bg: var(--warning-subtle);
+  --warning-border: var(--warning);
+  --warning-text: var(--fg);
+  --error-bg: var(--danger-subtle);
+  --error-border: var(--danger);
+  --error-text: var(--danger);
+}

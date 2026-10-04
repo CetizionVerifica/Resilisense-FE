@@ -4,9 +4,16 @@ import {
   type MembersControllerList200ItemsItem,
 } from '@/api/generated/model';
 import {
+  COUNTRY_FIXTURES,
+  initialActivity,
+  initialCompanies,
   initialInvitations,
   initialMembers,
+  initialPartnerClients,
+  initialPartnerGrants,
   initialProfile,
+  initialWorkspaceProfiles,
+  type MockCompany,
   MOCK_MFA_CODE,
   MOCK_PASSWORD,
   MOCK_TERMS_VERSION,
@@ -15,12 +22,14 @@ import {
   type MockUser,
   OWNER,
   type Profile,
+  SECTOR_FIXTURES,
   USERS,
+  WORKSPACES,
   WS_ACME,
 } from './data';
 
 /**
- * In-memory M01 API (docs/revamp/modules/M01 §8) with the same shapes and problem codes as
+ * In-memory M01 + M02 API (docs/revamp/modules/M01 §8, M02 §8) with the same shapes and problem codes as
  * CSR_BE. State resets with `resetMockState()` (tests) or a page reload (browser).
  */
 const problem = (status: number, type: string, title: string, extra: Record<string, unknown> = {}) =>
@@ -47,6 +56,11 @@ function freshState() {
     members: initialMembers(),
     invitations: initialInvitations(),
     otherSessionRevoked: false,
+    workspaces: initialWorkspaceProfiles(),
+    companies: initialCompanies(),
+    activity: initialActivity(),
+    partnerGrants: initialPartnerGrants(),
+    partnerClients: initialPartnerClients(),
   };
 }
 
@@ -105,6 +119,61 @@ function adminOf(request: Request, wid: unknown): Session | Response {
   return session;
 }
 
+/** Session + its /me view for M02 routes; writes in suspended/closed workspaces answer 403 (US-02-5). */
+function actorOf(request: Request, permission?: string): { session: Session; perms: string[] } | Response {
+  const session = sessionOf(request);
+  if (!session) return unauthenticated();
+  const me = meFor(session.user, session.workspaceId);
+  if (permission && !me.permissions.includes(permission as never)) {
+    return problem(403, 'forbidden', 'You do not have permission to do this');
+  }
+  const status = me.currentWorkspace?.status;
+  if (request.method !== 'GET' && (status === 'suspended' || status === 'closed')) {
+    return problem(403, 'workspace_suspended', 'This workspace is suspended');
+  }
+  return { session: { ...session, workspaceId: me.currentWorkspace!.id }, perms: me.permissions };
+}
+
+const invalid = (path: string, message: string) =>
+  problem(400, 'validation_failed', 'Invalid input', { detail: message, errors: [{ path, message }] });
+
+const publicCompany = ({ workspaceId: _wid, ...c }: MockCompany) => c;
+
+function companiesOf(wid: string, deleted = false) {
+  return state.companies.filter((c) => c.workspaceId === wid && !!c.deletedAt === deleted);
+}
+
+function companyIn(wid: string, id: unknown, deleted = false) {
+  return companiesOf(wid, deleted).find((c) => c.id === id);
+}
+
+/** Checks reference fields like CSR_BE companies.service (sector, country, parent). */
+function companyFieldsProblem(input: Json, wid: string, selfId?: string): Response | null {
+  if (input.sectorCode !== undefined && !SECTOR_FIXTURES.some((s) => s.code === input.sectorCode && s.parentCode)) {
+    return invalid('sectorCode', 'Unknown sector');
+  }
+  if (input.country !== undefined && !COUNTRY_FIXTURES.some((c) => c.code === input.country)) {
+    return invalid('country', 'Unknown country');
+  }
+  if (input.parentCompanyId) {
+    if (input.parentCompanyId === selfId || !companyIn(wid, input.parentCompanyId)) {
+      return invalid('parentCompanyId', 'Unknown parent company');
+    }
+  }
+  return null;
+}
+
+function logActivity(companyId: string, action: string, actor: MockUser, fields: string[] = []) {
+  const list = (state.activity[companyId] ??= []);
+  list.unshift({
+    id: `01920000-0000-7000-8000-${String(800000000000 + ++state.counter)}`,
+    occurredAt: new Date().toISOString(),
+    action,
+    actor: { id: actor.id, name: actor.name },
+    fields,
+  });
+}
+
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ROLES = ['workspace_owner', 'workspace_admin', 'contributor', 'viewer', 'auditor'];
 
@@ -136,7 +205,7 @@ export const handlers = [
     if (!user || password !== MOCK_PASSWORD) return problem(401, 'unauthenticated', 'Invalid email or password');
     if (user.mfa) return HttpResponse.json({ mfaRequired: true, mfaToken: `mfa-${user.id}` });
     if (user.platform) return HttpResponse.json({ mfaEnrollmentRequired: true, mfaToken: `enroll-${user.id}` });
-    return HttpResponse.json(issue({ user, workspaceId: WS_ACME }));
+    return HttpResponse.json(issue({ user, workspaceId: user.workspaces?.[0] ?? WS_ACME }));
   }),
 
   http.post('*/v1/auth/signup', async ({ request }) => {
@@ -167,7 +236,7 @@ export const handlers = [
     if (!user) return problem(401, 'unauthenticated', 'Sign in again');
     if (code !== MOCK_MFA_CODE && recoveryCode !== 'abcde-12345')
       return problem(401, 'unauthenticated', 'Invalid code');
-    return HttpResponse.json(issue({ user, workspaceId: WS_ACME }));
+    return HttpResponse.json(issue({ user, workspaceId: user.workspaces?.[0] ?? WS_ACME }));
   }),
 
   http.post('*/v1/auth/mfa/setup', ({ request }) => {
@@ -269,9 +338,18 @@ export const handlers = [
 
   http.get('*/v1/me', ({ request }) => {
     const session = sessionOf(request);
-    return session
-      ? HttpResponse.json(meFor(session.user, session.workspaceId, profileOf(session.user)))
-      : unauthenticated();
+    if (!session) return unauthenticated();
+    const me = meFor(session.user, session.workspaceId, profileOf(session.user));
+    // Workspace renames (PATCH /workspaces/current) show in the header and switcher.
+    const nameOf = (id: string, fallback: string) => state.workspaces[id]?.name ?? fallback;
+    return HttpResponse.json({
+      ...me,
+      currentWorkspace: me.currentWorkspace && {
+        ...me.currentWorkspace,
+        name: nameOf(me.currentWorkspace.id, me.currentWorkspace.name),
+      },
+      memberships: me.memberships.map((m) => ({ ...m, workspaceName: nameOf(m.workspaceId, m.workspaceName) })),
+    });
   }),
 
   http.patch('*/v1/me', async ({ request }) => {
@@ -457,5 +535,250 @@ export const handlers = [
     if (!state.invitations.some((i) => i.id === params.id)) return notFound();
     state.invitations = state.invitations.filter((i) => i.id !== params.id);
     return new HttpResponse(null, { status: 204 });
+  }),
+
+  // ─── M02 §8 ───
+  http.get('*/v1/workspaces/current', ({ request }) => {
+    const actor = actorOf(request);
+    if (actor instanceof Response) return actor;
+    return HttpResponse.json(state.workspaces[actor.session.workspaceId]);
+  }),
+
+  http.patch('*/v1/workspaces/current', async ({ request }) => {
+    const actor = actorOf(request, 'workspace:manage');
+    if (actor instanceof Response) return actor;
+    const input = await body(request);
+    if (typeof input.name === 'string' && !input.name.trim()) return invalid('name', 'Required');
+    const ws = state.workspaces[actor.session.workspaceId]!;
+    const { branding, ...rest } = input as Json & { branding?: Json };
+    Object.assign(ws, rest, branding ? { branding: { ...ws.branding, ...branding } } : {});
+    return HttpResponse.json(ws);
+  }),
+
+  http.get('*/v1/workspaces/current/entitlements', ({ request }) => {
+    const actor = actorOf(request);
+    if (actor instanceof Response) return actor;
+    const wid = actor.session.workspaceId;
+    const ws = WORKSPACES[wid]!;
+    return HttpResponse.json({
+      plan: ws.plan,
+      modules: ws.modules,
+      limits: ws.limits,
+      trialEndsAt: state.workspaces[wid]?.trialEndsAt ?? null,
+      usage: {
+        companies: companiesOf(wid).length,
+        users: wid === WS_ACME ? state.members.filter((m) => m.status === 'active').length : 1,
+        clientWorkspaces: ws.limits.clientWorkspaces ? state.partnerClients.length : 0,
+      },
+    });
+  }),
+
+  http.get('*/v1/workspaces/current/partner-grants', ({ request }) => {
+    const actor = actorOf(request, 'workspace:manage');
+    if (actor instanceof Response) return actor;
+    return HttpResponse.json({ items: state.partnerGrants[actor.session.workspaceId] ?? [] });
+  }),
+
+  http.delete('*/v1/workspaces/current/partner-grants/:id', ({ request, params }) => {
+    const actor = actorOf(request, 'workspace:manage');
+    if (actor instanceof Response) return actor;
+    const wid = actor.session.workspaceId;
+    const grants = state.partnerGrants[wid] ?? [];
+    if (!grants.some((g) => g.id === params.id)) return notFound();
+    state.partnerGrants[wid] = grants.filter((g) => g.id !== params.id);
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.get('*/v1/reference/sectors', ({ request }) =>
+    sessionOf(request) ? HttpResponse.json({ items: SECTOR_FIXTURES }) : unauthenticated(),
+  ),
+
+  http.get('*/v1/reference/countries', ({ request }) =>
+    sessionOf(request) ? HttpResponse.json({ items: COUNTRY_FIXTURES }) : unauthenticated(),
+  ),
+
+  http.get('*/v1/companies', ({ request }) => {
+    const actor = actorOf(request, 'project:read');
+    if (actor instanceof Response) return actor;
+    const url = new URL(request.url);
+    const q = (url.searchParams.get('q') ?? '').toLocaleLowerCase();
+    const deleted = url.searchParams.get('status') === 'deleted';
+    if (deleted && !actor.perms.includes('company:update')) {
+      return problem(403, 'forbidden', 'Requires permission company:update');
+    }
+    const rows = companiesOf(actor.session.workspaceId, deleted)
+      .filter((c) => !q || `${c.legalName} ${c.displayName} ${c.registrationNo ?? ''}`.toLocaleLowerCase().includes(q))
+      .sort((a, b) => a.displayName.localeCompare(b.displayName))
+      .map(publicCompany);
+    return HttpResponse.json(page(rows, url));
+  }),
+
+  http.post('*/v1/companies', async ({ request }) => {
+    const actor = actorOf(request, 'company:create');
+    if (actor instanceof Response) return actor;
+    const wid = actor.session.workspaceId;
+    const input = await body(request);
+    const fieldsProblem = companyFieldsProblem(input, wid);
+    if (fieldsProblem) return fieldsProblem;
+    const max = WORKSPACES[wid]!.limits.companies;
+    if (typeof max === 'number' && companiesOf(wid).length >= max) {
+      return problem(403, 'limit_exceeded', 'Company limit reached', {
+        detail: `The plan allows ${max}`,
+        limit: 'companies',
+        max,
+      });
+    }
+    const now = new Date().toISOString();
+    const created: MockCompany = {
+      id: `01920000-0000-7000-8000-${String(700000000000 + ++state.counter)}`,
+      workspaceId: wid,
+      displayName: String(input.legalName),
+      registrationNo: null,
+      employeeCount: null,
+      region: null,
+      website: null,
+      description: null,
+      address: null,
+      logoFileId: null,
+      parentCompanyId: null,
+      ...(input as Partial<MockCompany>),
+      legalName: String(input.legalName),
+      sectorCode: String(input.sectorCode),
+      sizeBand: input.sizeBand as MockCompany['sizeBand'],
+      country: String(input.country),
+      currency: String(input.currency),
+      fiscalYearStartMonth: Number(input.fiscalYearStartMonth ?? 1),
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      restorableUntil: null,
+      lastActivityAt: now,
+    };
+    state.companies.push(created);
+    logActivity(created.id, 'company.created', actor.session.user);
+    return HttpResponse.json(publicCompany(created), { status: 201 });
+  }),
+
+  http.get('*/v1/companies/:id', ({ request, params }) => {
+    const actor = actorOf(request, 'project:read');
+    if (actor instanceof Response) return actor;
+    const c = companyIn(actor.session.workspaceId, params.id);
+    return c ? HttpResponse.json(publicCompany(c)) : notFound();
+  }),
+
+  http.patch('*/v1/companies/:id', async ({ request, params }) => {
+    const actor = actorOf(request, 'company:update');
+    if (actor instanceof Response) return actor;
+    const wid = actor.session.workspaceId;
+    const c = companyIn(wid, params.id);
+    if (!c) return notFound();
+    const input = await body(request);
+    const fieldsProblem = companyFieldsProblem(input, wid, c.id);
+    if (fieldsProblem) return fieldsProblem;
+    const changed = Object.keys(input).filter(
+      (k) => JSON.stringify(input[k]) !== JSON.stringify((c as unknown as Json)[k]),
+    );
+    Object.assign(c, input, { updatedAt: new Date().toISOString() });
+    if (changed.length) logActivity(c.id, 'company.updated', actor.session.user, changed);
+    return HttpResponse.json(publicCompany(c));
+  }),
+
+  http.delete('*/v1/companies/:id', ({ request, params }) => {
+    const actor = actorOf(request, 'company:update');
+    if (actor instanceof Response) return actor;
+    const c = companyIn(actor.session.workspaceId, params.id);
+    if (!c) return notFound();
+    const confirmName = new URL(request.url).searchParams.get('confirmName') ?? '';
+    const typed = confirmName.trim().toLocaleLowerCase();
+    if (typed !== c.displayName.toLocaleLowerCase() && typed !== c.legalName.toLocaleLowerCase()) {
+      return invalid('confirmName', 'Type the company name to confirm');
+    }
+    const now = new Date();
+    c.deletedAt = now.toISOString();
+    c.restorableUntil = new Date(now.getTime() + 30 * 86_400_000).toISOString();
+    logActivity(c.id, 'company.deleted', actor.session.user);
+    return HttpResponse.json(publicCompany(c));
+  }),
+
+  http.post('*/v1/companies/:id/restore', ({ request, params }) => {
+    const actor = actorOf(request, 'company:update');
+    if (actor instanceof Response) return actor;
+    const wid = actor.session.workspaceId;
+    const c = companyIn(wid, params.id, true);
+    if (!c) return notFound();
+    const max = WORKSPACES[wid]!.limits.companies;
+    if (typeof max === 'number' && companiesOf(wid).length >= max) {
+      return problem(403, 'limit_exceeded', 'Company limit reached', {
+        detail: `The plan allows ${max}`,
+        limit: 'companies',
+        max,
+      });
+    }
+    Object.assign(c, { deletedAt: null, restorableUntil: null });
+    logActivity(c.id, 'company.restored', actor.session.user);
+    return HttpResponse.json(publicCompany(c));
+  }),
+
+  http.get('*/v1/companies/:id/activity', ({ request, params }) => {
+    const actor = actorOf(request, 'project:read');
+    if (actor instanceof Response) return actor;
+    const c = companyIn(actor.session.workspaceId, params.id);
+    if (!c) return notFound();
+    return HttpResponse.json(page(state.activity[c.id] ?? [], new URL(request.url)));
+  }),
+
+  http.get('*/v1/partner/clients', ({ request }) => {
+    const actor = actorOf(request, 'partner:manage');
+    if (actor instanceof Response) return actor;
+    const limit = WORKSPACES[actor.session.workspaceId]!.limits.clientWorkspaces;
+    if (!limit) return problem(403, 'forbidden', 'Not a partner workspace');
+    const rows = state.partnerClients.map((c) => ({ ...c, id: c.grantId }));
+    const result = page(rows, new URL(request.url));
+    return HttpResponse.json({
+      items: result.items.map(({ id: _id, ...c }) => c),
+      nextCursor: result.nextCursor,
+      usage: { clientWorkspaces: state.partnerClients.length, limit },
+    });
+  }),
+
+  http.post('*/v1/partner/clients', async ({ request }) => {
+    const actor = actorOf(request, 'partner:manage');
+    if (actor instanceof Response) return actor;
+    const limit = WORKSPACES[actor.session.workspaceId]!.limits.clientWorkspaces;
+    if (!limit) return problem(403, 'forbidden', 'Not a partner workspace');
+    const { workspace, company, owner } = (await body(request)) as { workspace: Json; company: Json; owner: Json };
+    if (!COUNTRY_FIXTURES.some((c) => c.code === workspace.country)) {
+      return invalid('workspace.country', 'Unknown country');
+    }
+    const companyProblem = companyFieldsProblem(company, actor.session.workspaceId);
+    if (companyProblem) return companyProblem;
+    if (!EMAIL.test(String(owner.email))) return invalid('owner.email', 'Invalid email');
+    if (state.partnerClients.length >= limit) {
+      return problem(403, 'limit_exceeded', 'Client workspace limit reached', {
+        detail: `The plan allows ${limit}`,
+        limit: 'clientWorkspaces',
+        max: limit,
+      });
+    }
+    const n = ++state.counter;
+    const created = {
+      grantId: `01920000-0000-7000-8000-${String(600000000000 + n)}`,
+      workspaceId: `01920000-0000-7000-8000-${String(610000000000 + n)}`,
+      name: String(workspace.name),
+      status: 'active' as const,
+      companies: 1,
+      lastActivityAt: null,
+      createdAt: new Date().toISOString(),
+    };
+    state.partnerClients.unshift(created);
+    return HttpResponse.json(
+      {
+        workspaceId: created.workspaceId,
+        companyId: `01920000-0000-7000-8000-${String(620000000000 + n)}`,
+        grantId: created.grantId,
+        invitationId: `01920000-0000-7000-8000-${String(630000000000 + n)}`,
+      },
+      { status: 201 },
+    );
   }),
 ];
