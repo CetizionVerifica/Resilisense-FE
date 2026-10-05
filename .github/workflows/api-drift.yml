@@ -1,0 +1,89 @@
+name: API drift
+
+# Compares the pinned backend contract (api/openapi.json, pinned in api/openapi.lock.json) with
+# CSR_BE's main branch, so the FE learns about new or breaking API changes before a module PR finds
+# them (CI test plan A4). It also checks that api/openapi.json is exactly the file at the pinned
+# commit (never hand-edited).
+#
+# Needs a repository secret CSR_BE_READ_TOKEN: a fine-grained token with read-only "Contents" access
+# to CetizionVerifica/CSR_BE. Without it the job is skipped with a notice.
+#
+# Pull requests: report only (job summary). Nightly: fails when main has breaking changes the pin
+# does not have yet — run `npm run api:sync -- --ref main` and fix what breaks.
+#
+# .github/oasdiff-levels.txt downgrades a new value in a response enum (a permission, a status) to a
+# warning: it only matters to the FE once it syncs the contract, and its typecheck then catches it.
+
+on:
+  pull_request:
+    paths: ['api/**', 'src/api/**', 'orval.config.ts', '.github/workflows/api-drift.yml']
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-drift-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      OASDIFF_VERSION: v1.33.0
+      TOKEN: ${{ secrets.CSR_BE_READ_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Token available?
+        id: token
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::notice::CSR_BE_READ_TOKEN is not set; API drift check skipped."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Fetch the contract at the pinned ref and on CSR_BE main
+        if: steps.token.outputs.available == 'true'
+        run: |
+          fetch() {
+            curl -fsSL -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github.raw" \
+              "https://api.github.com/repos/$(jq -r .repository api/openapi.lock.json)/contents/$(jq -r .path api/openapi.lock.json)?ref=$1" -o "$2"
+          }
+          fetch "$(jq -r .ref api/openapi.lock.json)" "$RUNNER_TEMP/pinned.json"
+          fetch main "$RUNNER_TEMP/main.json"
+      - name: api/openapi.json matches the pinned ref
+        if: steps.token.outputs.available == 'true'
+        run: |
+          if ! cmp -s "$RUNNER_TEMP/pinned.json" api/openapi.json; then
+            echo "::error file=api/openapi.json::api/openapi.json differs from CSR_BE at the pinned ref; regenerate it with npm run api:sync (never edit it by hand)."
+            exit 1
+          fi
+      - uses: actions/setup-go@v6
+        if: steps.token.outputs.available == 'true'
+        with:
+          go-version: stable
+          cache: false
+      - name: Install oasdiff
+        if: steps.token.outputs.available == 'true'
+        run: go install "github.com/oasdiff/oasdiff@${OASDIFF_VERSION}"
+      - name: Changes on CSR_BE main not yet synced
+        if: steps.token.outputs.available == 'true'
+        run: |
+          OASDIFF="$(go env GOPATH)/bin/oasdiff"
+          {
+            echo "## CSR_BE main vs pinned contract ($(jq -r .ref api/openapi.lock.json | cut -c1-7))"
+            if cmp -s api/openapi.json "$RUNNER_TEMP/main.json"; then
+              echo "In sync: nothing to pull."
+            else
+              "$OASDIFF" changelog api/openapi.json "$RUNNER_TEMP/main.json" --format markdown
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            "$OASDIFF" breaking api/openapi.json "$RUNNER_TEMP/main.json" --severity-levels .github/oasdiff-levels.txt --format githubactions || true
+          else
+            "$OASDIFF" breaking api/openapi.json "$RUNNER_TEMP/main.json" --severity-levels .github/oasdiff-levels.txt --format githubactions --fail-on ERR
+          fi

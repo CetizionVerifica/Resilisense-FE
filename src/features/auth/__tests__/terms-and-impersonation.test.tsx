@@ -1,5 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import { http } from 'msw';
+import { problem } from '@/mocks/handlers';
 import { server } from '@/test/server';
 import { renderSignedIn } from '@/test/session';
 
@@ -52,7 +53,7 @@ describe('impersonation banner (M01 §4.2, §7.1)', () => {
 
 describe('review fixes', () => {
   it('fails closed: no app when /me cannot be loaded', { timeout: 15_000 }, async () => {
-    server.use(http.get('*/v1/me', () => HttpResponse.json({}, { status: 500 })));
+    server.use(http.get('*/v1/me', () => problem(500, 'internal_error', 'Internal server error')));
     await renderSignedIn('/');
     expect(await screen.findByRole('heading', { name: 'Something went wrong' }, { timeout: 6000 })).toBeInTheDocument();
     expect(screen.queryByRole('navigation', { name: 'Main navigation' })).not.toBeInTheDocument();
@@ -61,7 +62,7 @@ describe('review fixes', () => {
   it('an expired impersonation returns to the owner instead of silently refreshing as them', async () => {
     const { user } = await renderSignedIn('/', 'impersonated@example.com');
     await screen.findByRole('button', { name: 'End impersonation' });
-    server.use(http.patch('*/v1/me', () => HttpResponse.json({}, { status: 401 }), { once: true }));
+    server.use(http.patch('*/v1/me', () => problem(401, 'unauthenticated', 'Token expired'), { once: true }));
     await user.click(screen.getByRole('button', { name: 'Account menu' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Account settings' }));
     await user.type(await screen.findByLabelText('Job title'), 'Analyst');
