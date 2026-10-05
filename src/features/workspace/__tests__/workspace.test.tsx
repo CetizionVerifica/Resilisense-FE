@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { WS_ACME } from '@/mocks/data';
+import { problem } from '@/mocks/handlers';
 import { server } from '@/test/server';
 import { renderSignedIn } from '@/test/session';
 
@@ -37,7 +38,12 @@ describe('workspace settings (M02 §9)', () => {
 
   it('lets the owner revoke a partner grant', async () => {
     let grants = [
-      { id: 'g1', partnerWorkspaceId: WS_ACME, partnerName: 'Acme Consulting', createdAt: '2026-02-01T09:00:00.000Z' },
+      {
+        id: '0192a000-0000-7000-8000-0000000000a1',
+        partnerWorkspaceId: WS_ACME,
+        partnerName: 'Acme Consulting',
+        createdAt: '2026-02-01T09:00:00.000Z',
+      },
     ];
     server.use(
       http.get('*/v1/workspaces/current/partner-grants', () => HttpResponse.json({ items: grants })),
@@ -55,7 +61,7 @@ describe('workspace settings (M02 §9)', () => {
   });
 
   it('shows the error state and recovers on retry', { timeout: 15_000 }, async () => {
-    server.use(http.get('*/v1/workspaces/current', () => HttpResponse.json({}, { status: 500 })));
+    server.use(http.get('*/v1/workspaces/current', () => problem(500, 'internal_error', 'Internal server error')));
     const { user } = await renderSignedIn('/settings/workspace');
     expect(
       await screen.findByRole('heading', { name: 'Could not load the workspace' }, { timeout: 6000 }),
@@ -78,7 +84,9 @@ describe('plan & usage (M02 §9)', () => {
   });
 
   it('shows the error state', { timeout: 15_000 }, async () => {
-    server.use(http.get('*/v1/workspaces/current/entitlements', () => HttpResponse.json({}, { status: 500 })));
+    server.use(
+      http.get('*/v1/workspaces/current/entitlements', () => problem(500, 'internal_error', 'Internal server error')),
+    );
     await renderSignedIn('/settings/plan');
     expect(
       await screen.findByRole('heading', { name: 'Could not load your plan' }, { timeout: 6000 }),

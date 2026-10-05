@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { COMPANY_ACME } from '@/mocks/data';
+import { problem } from '@/mocks/handlers';
 import { server } from '@/test/server';
 import { renderSignedIn } from '@/test/session';
 
@@ -45,7 +46,7 @@ describe('companies list (M02 §9)', () => {
   });
 
   it('shows the error state and recovers on retry', { timeout: 15_000 }, async () => {
-    server.use(http.get('*/v1/companies', () => HttpResponse.json({}, { status: 500 })));
+    server.use(http.get('*/v1/companies', () => problem(500, 'internal_error', 'Internal server error')));
     const { user } = await renderSignedIn('/companies');
     expect(
       await screen.findByRole('heading', { name: 'Could not load companies' }, { timeout: 6000 }),
