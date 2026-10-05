@@ -1,0 +1,10 @@
+{
+  "$comment": "CI test plan B1 (scripts/spec-coverage.mjs): modules implemented in this repo; every §5 user story of their specs needs a test that names it, or a waiver with the reason it has no frontend test.",
+  "modules": ["M01", "M02"],
+  "testDirs": ["src", "e2e"],
+  "testFiles": "\\.(test|spec)\\.tsx?$",
+  "waivers": {
+    "US-01-4": "Backend-only: the route-decorator rule is enforced by CSR_BE test/route-authorization.e2e-spec.ts.",
+    "US-01-5": "Platform user/session admin UI is deferred to M13 (M01 §9 notes); the API side is tested in CSR_BE."
+  }
+}

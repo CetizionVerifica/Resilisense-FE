@@ -44,7 +44,15 @@ export default defineConfig(() => ({
     css: false,
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/api/generated/**', 'src/**/*.stories.tsx', 'src/test/**'],
+      exclude: ['src/api/generated/**', 'src/**/*.stories.tsx', 'src/test/**', 'src/mocks/**'],
+      // CI test plan B3: floors a few points under today's numbers (2026-10-05 with M02: lines 90.2,
+      // branches 75.7; src/lib lines 95, branches 82; schemas lines 100, branches 82). Only ratchet up.
+      thresholds: {
+        lines: 87,
+        branches: 72,
+        'src/lib/**': { lines: 90, branches: 80 },
+        'src/features/*/schemas.ts': { lines: 95, branches: 80 },
+      },
     },
   },
 }));
