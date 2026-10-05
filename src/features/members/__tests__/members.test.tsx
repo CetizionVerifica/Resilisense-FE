@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
+import { problem } from '@/mocks/handlers';
 import { renderSignedIn } from '@/test/session';
 import { server } from '@/test/server';
 
@@ -39,7 +40,7 @@ describe('members list (M01 §9)', () => {
   });
 
   it('shows the error state and recovers on retry', { timeout: 15_000 }, async () => {
-    server.use(http.get('*/v1/workspaces/:wid/members', () => HttpResponse.json({}, { status: 500 })));
+    server.use(http.get('*/v1/workspaces/:wid/members', () => problem(500, 'internal_error', 'Internal server error')));
     const { user } = await renderSignedIn('/settings/members');
     expect(
       await screen.findByRole('heading', { name: "Couldn't load members" }, { timeout: 6000 }),
