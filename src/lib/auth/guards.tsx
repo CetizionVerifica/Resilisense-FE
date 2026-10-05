@@ -1,8 +1,11 @@
+import { Lock } from 'lucide-react';
 import { type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Navigate, Outlet, useLocation } from 'react-router';
-import { PageSkeleton } from '@/components/ui/states';
+import { Link, Navigate, Outlet, useLocation } from 'react-router';
+import { Button } from '@/components/ui/button';
+import { EmptyState, PageSkeleton } from '@/components/ui/states';
 import { useAuth } from './auth-provider';
+import { type ModuleName, useEntitlement } from './entitlements';
 import { type Permission, usePermission } from './me';
 
 function Bootstrapping() {
@@ -55,4 +58,37 @@ export function RequirePermission({
   fallback?: ReactNode;
 }) {
   return usePermission(permission) ? children : fallback;
+}
+
+/**
+ * Route guard for an entitlement module (M02 §4.1, 02 §3): non-entitled workspaces see the
+ * locked-module panel instead of the module. UI hint; the API answers `403 entitlement_required`.
+ */
+export function RequireModule({ module }: { module: ModuleName }) {
+  const { t } = useTranslation();
+  const entitled = useEntitlement(module);
+  if (entitled === undefined) return <PageSkeleton label={t('state.loading')} />;
+  return entitled ? <Outlet /> : <LockedModulePanel module={module} />;
+}
+
+/** Lock icon + upsell panel for a module the workspace has not bought (M02 §9). */
+export function LockedModulePanel({ module }: { module: ModuleName }) {
+  const { t } = useTranslation();
+  const canSeePlan = usePermission('workspace:manage');
+  return (
+    <EmptyState
+      icon={<Lock aria-hidden />}
+      title={t('locked.title', { module: t(`module.${module}`) })}
+      description={t('locked.description')}
+      action={
+        canSeePlan ? (
+          <Button asChild variant="secondary">
+            <Link to="/settings/plan">{t('locked.viewPlan')}</Link>
+          </Button>
+        ) : (
+          <p className="text-small text-fg-muted">{t('locked.askAdmin')}</p>
+        )
+      }
+    />
+  );
 }

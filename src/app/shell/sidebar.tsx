@@ -1,10 +1,11 @@
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Lock, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router';
+import { useIsPartnerWorkspace } from '@/lib/auth/entitlements';
 import { useMe } from '@/lib/auth/me';
 import { cn } from '@/lib/utils';
 import { Logo } from './logo';
-import { NAV } from './nav';
+import { NAV, type NavItem } from './nav';
 
 /** Dark-slate sidebar in both themes with an amber active bar on the start side (02 §2.2, §3). */
 export function Sidebar({
@@ -18,7 +19,11 @@ export function Sidebar({
 }) {
   const { t } = useTranslation();
   const { data: me } = useMe();
-  const allowed = (p?: string) => !p || !!me?.permissions.includes(p as never);
+  const isPartner = useIsPartnerWorkspace();
+  const allowed = (i: NavItem) =>
+    (!i.permission || !!me?.permissions.includes(i.permission)) && (!i.partnerOnly || isPartner);
+  // Non-entitled modules stay visible with a lock; their route shows the locked-module panel.
+  const locked = (i: NavItem) => !!i.module && !me?.entitlements?.modules.includes(i.module);
 
   return (
     <nav
@@ -30,7 +35,7 @@ export function Sidebar({
       </div>
       <div className="flex-1 overflow-y-auto px-3 py-2">
         {NAV.map((group) => {
-          const items = group.items.filter((i) => allowed(i.permission));
+          const items = group.items.filter(allowed);
           if (items.length === 0) return null;
           return (
             <div key={group.labelKey} className="grid gap-0.5 pb-4">
@@ -54,6 +59,15 @@ export function Sidebar({
                 >
                   <item.icon className="size-5 shrink-0" aria-hidden />
                   <span className={cn(collapsed && 'sr-only')}>{t(item.labelKey)}</span>
+                  {locked(item) ? (
+                    <>
+                      <Lock
+                        className={cn('ms-auto size-4 shrink-0 text-sidebar-muted', collapsed && 'hidden')}
+                        aria-hidden
+                      />
+                      <span className="sr-only">{t('locked.label')}</span>
+                    </>
+                  ) : null}
                 </NavLink>
               ))}
             </div>

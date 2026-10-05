@@ -1,0 +1,46 @@
+{
+  "title": "Clients",
+  "description": "Client workspaces you onboarded. Open one to work in it as an admin.",
+  "table": "Client workspaces",
+  "usage": "{used} of {max} client workspaces used",
+  "loadFailed": "Could not load your clients",
+  "loadMore": "Load more",
+  "column": {
+    "name": "Workspace",
+    "status": "Status",
+    "companies": "Companies",
+    "lastActivity": "Last activity",
+    "actions": "Actions"
+  },
+  "empty": {
+    "title": "No clients yet",
+    "description": "Onboard a client to create their workspace and invite its owner."
+  },
+  "notPartner": {
+    "title": "Partner console not available",
+    "description": "Your plan does not include client workspaces. Contact your ResiliSense account manager."
+  },
+  "open": {
+    "action": "Open",
+    "for": "Open {name}"
+  },
+  "onboard": {
+    "open": "Onboard client",
+    "title": "Onboard a client",
+    "description": "This creates the client's workspace and first company, and emails an invitation to its owner.",
+    "workspace": "Client workspace",
+    "note": "The owner sets their own password from the invitation. You get admin access to the workspace.",
+    "submit": "Create workspace",
+    "done": "{name} was created and an invitation was sent to {email}"
+  },
+  "field": {
+    "workspaceName": "Workspace name",
+    "workspaceCountry": "Workspace country",
+    "ownerEmail": "Owner email",
+    "ownerEmailHint": "The client's contact who will own the workspace."
+  },
+  "error": {
+    "limit": "You have reached the number of client workspaces your plan allows.",
+    "notPartner": "Your plan does not include client workspaces."
+  }
+}

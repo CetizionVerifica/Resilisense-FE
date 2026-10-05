@@ -14,6 +14,8 @@ export function SettingsLayout() {
       <TabNav label={t('sections')} className="mb-6">
         <TabNavLink to="/settings/profile">{t('tab.profile')}</TabNavLink>
         <TabNavLink to="/settings/security">{t('tab.security')}</TabNavLink>
+        <TabNavLink to="/settings/workspace">{t('tab.workspace')}</TabNavLink>
+        <TabNavLink to="/settings/plan">{t('tab.plan')}</TabNavLink>
         {canManageUsers ? <TabNavLink to="/settings/members">{t('tab.members')}</TabNavLink> : null}
       </TabNav>
       <Outlet />

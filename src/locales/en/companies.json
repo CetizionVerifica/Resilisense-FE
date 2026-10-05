@@ -1,0 +1,146 @@
+{
+  "title": "Companies",
+  "description": "The organisations you assess and report on. Projects, people and suppliers belong to a company.",
+  "breadcrumb": "Breadcrumb",
+  "sections": "Company sections",
+  "loadFailed": "Could not load companies",
+  "loadOneFailed": "Could not load this company",
+  "loadMore": "Load more",
+  "search": {
+    "label": "Search companies",
+    "placeholder": "Search by name or registration number",
+    "clear": "Clear search"
+  },
+  "table": {
+    "active": "Active",
+    "deleted": "Recently deleted"
+  },
+  "column": {
+    "name": "Company",
+    "sector": "Sector",
+    "country": "Country",
+    "size": "Size",
+    "lastActivity": "Last activity",
+    "deletedAt": "Deleted",
+    "restorableUntil": "Restorable until",
+    "actions": "Actions"
+  },
+  "empty": {
+    "title": "No companies yet",
+    "description": "Add the first company you want to assess. You can add subsidiaries later.",
+    "searchTitle": "No matching companies",
+    "searchDescription": "Nothing matches “{q}”. Check the spelling or clear the search.",
+    "deletedTitle": "Nothing to restore",
+    "deletedDescription": "Deleted companies stay here for 30 days and can be restored until then."
+  },
+  "create": {
+    "open": "Add company",
+    "title": "Add a company",
+    "description": "Start with the essentials. You can complete the profile later.",
+    "submit": "Add company"
+  },
+  "form": {
+    "identity": "Identity",
+    "profile": "Profile",
+    "choose": "Choose…",
+    "noParent": "None (top-level company)",
+    "currencyOption": "{code} · {name}",
+    "loadFailed": "Could not load the lists of sectors and countries. Try again."
+  },
+  "field": {
+    "legalName": "Legal name",
+    "displayName": "Display name",
+    "displayNameHint": "Shown across the app. Defaults to the legal name.",
+    "registrationNo": "Registration number",
+    "sectorCode": "Sector",
+    "sizeBand": "Size",
+    "employeeCount": "Employees",
+    "country": "Country",
+    "region": "Region or state",
+    "website": "Website",
+    "description": "Description",
+    "address": "Address",
+    "addressLine1": "Address line 1",
+    "addressLine2": "Address line 2",
+    "city": "City",
+    "postalCode": "Postal code",
+    "state": "State or province",
+    "currency": "Reporting currency",
+    "fiscalYearStartMonth": "Fiscal year starts in",
+    "parentCompanyId": "Parent company",
+    "parentCompanyIdHint": "Set this when the company is a subsidiary of another company in this workspace."
+  },
+  "size": {
+    "micro": "Micro (fewer than 10 employees)",
+    "small": "Small (10 to 49 employees)",
+    "medium": "Medium (50 to 249 employees)",
+    "large": "Large (250 or more employees)"
+  },
+  "overview": {
+    "sectorPath": "{group} › {sector}",
+    "created": "Added"
+  },
+  "tab": {
+    "overview": "Overview",
+    "activity": "Activity",
+    "settings": "Settings"
+  },
+  "activity": {
+    "title": "Activity",
+    "label": "Company activity",
+    "system": "System",
+    "fields": "Changed: {fields}",
+    "action": {
+      "created": "{actor} added the company",
+      "updated": "{actor} updated the company",
+      "deleted": "{actor} deleted the company",
+      "restored": "{actor} restored the company",
+      "other": "{actor}: {action}"
+    },
+    "empty": {
+      "title": "No activity yet",
+      "description": "Changes to this company will show up here."
+    },
+    "loadFailed": "Could not load the activity"
+  },
+  "settings": {
+    "title": "Company profile",
+    "description": "Changes apply to every project of this company."
+  },
+  "delete": {
+    "section": "Delete company",
+    "sectionDescription": "The company is hidden from every list. An admin can restore it within 30 days, after which it is removed for good.",
+    "open": "Delete company",
+    "title": "Delete {name}?",
+    "description": "Its projects become read-only and disappear from lists. You can restore it within 30 days.",
+    "typeName": "Type {name} to confirm",
+    "confirm": "Delete company"
+  },
+  "restore": {
+    "action": "Restore",
+    "for": "Restore {name}"
+  },
+  "toast": {
+    "created": "{name} was added",
+    "saved": "{name} was saved",
+    "deleted": "{name} was deleted. You can restore it within 30 days.",
+    "restored": "{name} was restored"
+  },
+  "notFound": {
+    "title": "Company not found",
+    "description": "It may have been deleted, or it belongs to another workspace.",
+    "back": "Back to companies"
+  },
+  "error": {
+    "limit": "Your plan allows {max, plural, one {# company} other {# companies}}. Ask the workspace owner to upgrade the plan.",
+    "forbidden": "You don't have permission to change companies.",
+    "notFound": "This company no longer exists.",
+    "invalid": "Some details are not valid. Check the highlighted fields."
+  },
+  "validation": {
+    "tooLong": "This is too long",
+    "wholeNumber": "Enter a whole number",
+    "website": "Enter a full web address starting with http:// or https://",
+    "server": "This value was not accepted"
+  }
+}

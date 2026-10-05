@@ -5,7 +5,9 @@
   "tab": {
     "profile": "Profile",
     "security": "Security",
-    "members": "Members"
+    "members": "Members",
+    "workspace": "Workspace",
+    "plan": "Plan"
   },
   "impersonating": "Security settings belong to the person you are signed in as. End the impersonation to manage your own account.",
   "profile": {
