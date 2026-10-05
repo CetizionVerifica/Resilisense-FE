@@ -20,7 +20,15 @@ export default defineConfig({
         fetch: { includeHttpResponseReturnType: false },
         // Cursor-paginated lists ("Load more"): the page param is the `cursor` query param.
         operations: Object.fromEntries(
-          ['MembersController_list', 'MembersController_invitations', 'PlatformUsersController_list'].map((id) => [
+          [
+            'MembersController_list',
+            'MembersController_invitations',
+            'PlatformUsersController_list',
+            'CompaniesController_list',
+            'CompaniesController_activity',
+            'PartnerController_list',
+            'PlatformWorkspacesController_list',
+          ].map((id) => [
             id,
             { query: { useQuery: true, useInfinite: true, useInfiniteQueryParam: 'cursor', signal: true } },
           ]),

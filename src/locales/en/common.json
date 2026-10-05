@@ -36,7 +36,9 @@
       "workspace": "Workspace",
       "admin": "Admin"
     },
-    "settings": "Settings"
+    "settings": "Settings",
+    "companies": "Companies",
+    "partnerClients": "Clients"
   },
   "workspace": {
     "label": "Workspaces",
@@ -61,7 +63,8 @@
     "empty": "No results",
     "navigate": "Go to",
     "actions": "Actions",
-    "invite": "Invite people"
+    "invite": "Invite people",
+    "addCompany": "Add company"
   },
   "notifications": {
     "label": "Notifications",
@@ -100,5 +103,41 @@
     "banner": "You're signed in as {user} ({email}) on behalf of {by}. Everything you do is recorded.",
     "end": "End impersonation",
     "endFailed": "Couldn't end the impersonation. Try again."
+  },
+  "company": {
+    "label": "Company",
+    "switch": "Switch company",
+    "all": "All companies"
+  },
+  "module": {
+    "gap": "Gap analysis",
+    "materiality": "Materiality",
+    "actions": "Actions & KPIs",
+    "surveys": "Surveys",
+    "supply_chain": "Supply chain",
+    "ranking": "Supplier ranking",
+    "frameworks": "Frameworks",
+    "ai": "AI assistant",
+    "carbon": "Carbon accounting"
+  },
+  "locked": {
+    "label": "Not in your plan",
+    "title": "{module} is not in your plan",
+    "description": "Your workspace has not added this module yet.",
+    "viewPlan": "View plan",
+    "askAdmin": "Ask your workspace owner to add it."
+  },
+  "suspended": {
+    "readOnly": "This workspace is read-only, so changes cannot be saved.",
+    "banner": {
+      "suspended": "{workspace} is suspended. You can view its data but not change it. Contact your ResiliSense account manager.",
+      "closed": "{workspace} is closed. You can view its data but not change it."
+    }
+  },
+  "workspaceStatus": {
+    "trial": "Trial",
+    "active": "Active",
+    "suspended": "Suspended",
+    "closed": "Closed"
   }
 }

@@ -1,0 +1,74 @@
+{
+  "loadFailed": "Could not load the workspace",
+  "saved": "Workspace settings saved",
+  "profile": {
+    "title": "Workspace",
+    "description": "Name, location and branding used across the app and in reports.",
+    "readOnlyDescription": "Only the workspace owner or an admin can change these settings."
+  },
+  "field": {
+    "name": "Workspace name",
+    "country": "Country",
+    "noCountry": "Not set",
+    "defaultLocale": "Default language",
+    "timezone": "Time zone",
+    "dataRegion": "Data region",
+    "dataRegionHint": "Where this workspace's data is stored. Contact support to change it.",
+    "accentColor": "Report accent colour",
+    "accentColorHint": "A hex colour such as #D8882A, used in exported reports.",
+    "reportFooter": "Report footer"
+  },
+  "region": {
+    "eu": "European Union",
+    "in": "India",
+    "us": "United States"
+  },
+  "partners": {
+    "title": "Partner access",
+    "description": "Partners you have granted access can open this workspace as admins.",
+    "none": "No partner has access to this workspace.",
+    "since": "Since {date}",
+    "revoke": "Revoke access",
+    "confirmTitle": "Revoke access for {name}?",
+    "confirmDescription": "{name} will no longer be able to open this workspace. They keep no copy of your data.",
+    "revoked": "Access for {name} was revoked",
+    "loadFailed": "Could not load partner access"
+  },
+  "plan": {
+    "title": "{plan} plan",
+    "description": "What your plan includes and how much of it you use.",
+    "trialEnds": "Your trial ends on {date}.",
+    "contact": "To change your plan or limits, contact your ResiliSense account manager.",
+    "loadFailed": "Could not load your plan",
+    "name": {
+      "trial": "Trial",
+      "partner_client": "Partner client",
+      "starter": "Starter",
+      "professional": "Professional",
+      "enterprise": "Enterprise"
+    }
+  },
+  "usage": {
+    "companies": "Companies",
+    "users": "Users",
+    "clientWorkspaces": "Client workspaces",
+    "ofLimit": "{used} of {max}",
+    "unlimited": "{used} · no limit",
+    "full": "Limit reached",
+    "projectsPerYear": "Up to {max, plural, one {# project} other {# projects}} per year"
+  },
+  "modules": {
+    "title": "Modules",
+    "description": "Modules not in your plan show a lock in the sidebar.",
+    "included": "Included",
+    "notIncluded": "Not included"
+  },
+  "error": {
+    "forbidden": "You don't have permission to change workspace settings.",
+    "notFound": "This partner access no longer exists.",
+    "invalid": "Some details are not valid. Check the highlighted fields."
+  },
+  "validation": {
+    "color": "Enter a hex colour such as #D8882A"
+  }
+}

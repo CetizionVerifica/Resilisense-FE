@@ -3,8 +3,11 @@ import ICU from 'i18next-icu';
 import { initReactI18next } from 'react-i18next';
 import enAuth from '@/locales/en/auth.json';
 import enCommon from '@/locales/en/common.json';
+import enCompanies from '@/locales/en/companies.json';
 import enMembers from '@/locales/en/members.json';
+import enPartner from '@/locales/en/partner.json';
 import enSettings from '@/locales/en/settings.json';
+import enWorkspace from '@/locales/en/workspace.json';
 import { pseudoLocalizeTree } from './pseudo-locale';
 
 /**
@@ -17,12 +20,23 @@ export const SUPPORTED_LOCALES = [SOURCE_LOCALE, ...(import.meta.env.PROD ? [] :
 const RTL_LANGUAGES = new Set(['ar', 'he', 'fa', 'ur']);
 
 export const resources = {
-  en: { common: enCommon, auth: enAuth, settings: enSettings, members: enMembers },
+  en: {
+    common: enCommon,
+    auth: enAuth,
+    settings: enSettings,
+    members: enMembers,
+    companies: enCompanies,
+    workspace: enWorkspace,
+    partner: enPartner,
+  },
   [PSEUDO_LOCALE]: {
     common: pseudoLocalizeTree(enCommon),
     auth: pseudoLocalizeTree(enAuth),
     settings: pseudoLocalizeTree(enSettings),
     members: pseudoLocalizeTree(enMembers),
+    companies: pseudoLocalizeTree(enCompanies),
+    workspace: pseudoLocalizeTree(enWorkspace),
+    partner: pseudoLocalizeTree(enPartner),
   },
 } as const;
 
@@ -55,7 +69,7 @@ export async function initI18n(locale = detectLocale()): Promise<typeof i18n> {
         lng: locale,
         fallbackLng: SOURCE_LOCALE,
         supportedLngs: [...SUPPORTED_LOCALES],
-        ns: ['common', 'auth', 'settings', 'members'],
+        ns: ['common', 'auth', 'settings', 'members', 'companies', 'workspace', 'partner'],
         defaultNS: 'common',
         fallbackNS: 'common',
         interpolation: { escapeValue: false }, // React escapes

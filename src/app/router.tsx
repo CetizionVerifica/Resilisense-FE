@@ -1,6 +1,8 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
 import { TermsGate } from '@/features/auth/components/terms-gate';
 import { authRoutes, publicOnlyAuthRoutes } from '@/features/auth/routes';
+import { companiesRoutes } from '@/features/companies/routes';
+import { partnerRoutes } from '@/features/partner/routes';
 import { settingsRoutes } from '@/features/settings/routes';
 import { PublicOnly, RequireAuth } from '@/lib/auth/guards';
 import { NotFound, RouteError, RouteFallback } from './route-error';
@@ -28,6 +30,8 @@ export const routes: RouteObject[] = [
                     index: true,
                     lazy: async () => ({ Component: (await import('@/features/home/home-page')).HomePage }),
                   },
+                  ...companiesRoutes,
+                  ...partnerRoutes,
                   ...settingsRoutes,
                 ],
               },
