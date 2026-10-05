@@ -8,15 +8,15 @@ name: API drift
 # Needs a repository secret CSR_BE_READ_TOKEN: a fine-grained token with read-only "Contents" access
 # to CetizionVerifica/CSR_BE. Without it the job is skipped with a notice.
 #
-# Pull requests: report only (job summary). Nightly: fails when main has breaking changes the pin
+# Pull requests (all, required before merge): fail only on a hand-edited api/openapi.json; the drift
+# itself is report only (job summary). Nightly: fails when main has breaking changes the pin
 # does not have yet — run `npm run api:sync -- --ref main` and fix what breaks.
 #
 # .github/oasdiff-levels.txt downgrades a new value in a response enum (a permission, a status) to a
 # warning: it only matters to the FE once it syncs the contract, and its typecheck then catches it.
 
 on:
-  pull_request:
-    paths: ['api/**', 'src/api/**', 'orval.config.ts', '.github/workflows/api-drift.yml']
+  pull_request: # every PR, so it can be a required check (a path filter would leave it pending)
   schedule:
     - cron: '17 4 * * *'
   workflow_dispatch:
