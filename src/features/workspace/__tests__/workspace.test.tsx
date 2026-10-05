@@ -36,7 +36,7 @@ describe('workspace settings (M02 §9)', () => {
     );
   });
 
-  it('lets the owner revoke a partner grant', async () => {
+  it('US-02-2: lets the owner revoke a partner grant', async () => {
     let grants = [
       {
         id: '0192a000-0000-7000-8000-0000000000a1',

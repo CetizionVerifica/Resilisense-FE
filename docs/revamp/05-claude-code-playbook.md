@@ -104,7 +104,7 @@ You run the dry runs (DR1–DR3) against snapshots on your infrastructure; Claud
   - CSR_BE engines: each `engine/` has property-based tests (`*.property.spec.ts`, fast-check) for the invariants its spec implies (ranges, boundaries, round-trips, monotonicity), next to the table-driven tests.
   - Coverage floors fail CI: CSR_BE engines 100% lines/functions and 95% branches (`vitest.config.mts`), e2e totals and services/controllers/repositories (`vitest.config.e2e.mts`); Resilisense-FE totals, `src/lib` and `schemas.ts` (`vite.config.ts`). Floors only go up: raise them when coverage rises, never lower them to get green.
   - CSR_BE **API fuzz** workflow (PRs touching `src/`, `prisma/`, `openapi.json`, and nightly): Schemathesis generates inputs for every operation from `openapi.json` against a seeded API and fails on any 5xx or a response outside the contract. Run it locally with `npm run fuzz:serve` + `st run openapi.json` (see the workflow).
-  - CSR_BE **Mutation testing** workflow (nightly): Stryker mutates the engines and reports mutants no test kills (`npm run test:mutation`, report in `reports/mutation/`). Report only until a minimum score is set.
+  - CSR_BE **Mutation testing** workflow (nightly): Stryker mutates the engines and reports mutants no test kills (`npm run test:mutation`, report in `reports/mutation/`). The nightly fails below the minimum score in `stryker.config.mjs` (baseline 90%); raise it as tests improve, never lower it.
 - Keep `CLAUDE.md` current: when you correct Claude on a convention twice, add it to `CLAUDE.md`.
 - Ask for a **weekly status report**: *"Summarise merged PRs this week against the roadmap phases in docs/revamp/03, list open spec questions, and propose next week's sessions."*
 

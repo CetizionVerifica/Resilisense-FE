@@ -110,7 +110,7 @@ describe('app shell (02 §3)', () => {
     expect(await within(nav).findByRole('link', { name: 'Clients' })).toHaveAttribute('href', '/partner/clients');
   });
 
-  it('RequireModule shows the locked-module panel for modules not in the plan', async () => {
+  it('US-02-3: RequireModule shows the locked-module panel for modules not in the plan', async () => {
     const { apiFetch } = await import('@/lib/api-client');
     const { authToken } = await import('@/lib/auth-token');
     const session = await apiFetch<{ accessToken: string }>('/v1/auth/login', {
