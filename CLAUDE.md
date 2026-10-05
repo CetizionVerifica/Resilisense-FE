@@ -54,6 +54,8 @@ Never commit `dist/`/`build/`, never use `--force` installs, never ship public s
 
 MSW mocks are checked against `api/openapi.json` in every test (`src/test/contract.ts`): a mocked status, body or request outside the contract fails the test, so update mocks only after `npm run api:sync`, and use `problem()` from `src/mocks/handlers.ts` for error responses.
 
+Tag tests with the spec story they prove (`'US-01-2: …'`); `npm run spec:coverage` fails on an untested or unknown story of a module listed in `spec-coverage.json` (stories the FE doesn't own get a waiver with a reason). Coverage floors in `vite.config.ts` only go up.
+
 Component tests for interactive components (keyboard + screen-reader names), MSW-backed page tests for loading/empty/error states, Playwright e2e for the critical journeys of each module (sign-in, answer gap questions, submit for review, send survey, respond to survey, generate report), axe checks in e2e, Storybook stories for every `ui/` component.
 
 ## Conventions

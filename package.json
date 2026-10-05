@@ -1,7 +1,7 @@
 {
   "name": "resilisense-web",
   "version": "2.0.0-alpha.0",
-  "description": "ResiliSense 2.0 web app — multi-tenant CSR/ESG assessment platform (see docs/revamp)",
+  "description": "ResiliSense 2.0 web app \u2014 multi-tenant CSR/ESG assessment platform (see docs/revamp)",
   "private": true,
   "license": "UNLICENSED",
   "type": "module",
@@ -23,6 +23,7 @@
     "api:generate": "orval --config orval.config.ts",
     "postinstall": "npm run -s api:generate",
     "i18n:check": "node scripts/i18n-check.mjs",
+    "spec:coverage": "node scripts/spec-coverage.mjs",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "audit": "audit-ci --config audit-ci.jsonc"
