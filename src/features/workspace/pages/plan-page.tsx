@@ -77,6 +77,7 @@ export function PlanPage() {
         <CardContent className="grid gap-5">
           <UsageMeter label={t('usage.companies')} used={usage.companies} max={limits.companies} />
           <UsageMeter label={t('usage.users')} used={usage.users} max={limits.users} />
+          <UsageMeter label={t('usage.storageMb')} used={usage.storageMb} max={limits.storageMb} />
           {typeof limits.clientWorkspaces === 'number' && limits.clientWorkspaces > 0 ? (
             <UsageMeter
               label={t('usage.clientWorkspaces')}

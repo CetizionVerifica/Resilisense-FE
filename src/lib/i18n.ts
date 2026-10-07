@@ -4,6 +4,7 @@ import { initReactI18next } from 'react-i18next';
 import enAuth from '@/locales/en/auth.json';
 import enCommon from '@/locales/en/common.json';
 import enCompanies from '@/locales/en/companies.json';
+import enFiles from '@/locales/en/files.json';
 import enMembers from '@/locales/en/members.json';
 import enPartner from '@/locales/en/partner.json';
 import enSettings from '@/locales/en/settings.json';
@@ -28,6 +29,7 @@ export const resources = {
     companies: enCompanies,
     workspace: enWorkspace,
     partner: enPartner,
+    files: enFiles,
   },
   [PSEUDO_LOCALE]: {
     common: pseudoLocalizeTree(enCommon),
@@ -37,6 +39,7 @@ export const resources = {
     companies: pseudoLocalizeTree(enCompanies),
     workspace: pseudoLocalizeTree(enWorkspace),
     partner: pseudoLocalizeTree(enPartner),
+    files: pseudoLocalizeTree(enFiles),
   },
 } as const;
 
@@ -69,7 +72,7 @@ export async function initI18n(locale = detectLocale()): Promise<typeof i18n> {
         lng: locale,
         fallbackLng: SOURCE_LOCALE,
         supportedLngs: [...SUPPORTED_LOCALES],
-        ns: ['common', 'auth', 'settings', 'members', 'companies', 'workspace', 'partner'],
+        ns: ['common', 'auth', 'settings', 'members', 'companies', 'workspace', 'partner', 'files'],
         defaultNS: 'common',
         fallbackNS: 'common',
         interpolation: { escapeValue: false }, // React escapes

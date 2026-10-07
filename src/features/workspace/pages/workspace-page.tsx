@@ -24,6 +24,7 @@ import { usePermission } from '@/lib/auth/me';
 import { applyFieldErrors } from '@/lib/form-errors';
 import { SUPPORTED_LOCALES } from '@/lib/i18n';
 import { useCountries, useDisplayNames } from '@/lib/reference';
+import { LogoField } from '@/features/files/components/logo-field';
 import { PartnerAccessCard } from '../components/partner-access-card';
 import { workspaceProblem } from '../problem-message';
 import { type WorkspaceValues, workspaceSchema } from '../schemas';
@@ -47,8 +48,48 @@ export function WorkspacePage() {
   return (
     <div className="grid gap-6">
       <WorkspaceForm workspace={workspace.data} canManage={canManage} />
+      <WorkspaceLogoCard workspace={workspace.data} canManage={canManage} />
       {canManage ? <PartnerAccessCard /> : null}
     </div>
+  );
+}
+
+/** Workspace logo (M02 §4.1 branding, M14 US-14-2): saved as soon as the upload is ready. */
+function WorkspaceLogoCard({
+  workspace,
+  canManage,
+}: {
+  workspace: WorkspacesControllerCurrent200;
+  canManage: boolean;
+}) {
+  const { t } = useTranslation('workspace');
+  const queryClient = useQueryClient();
+  const readOnly = useWorkspaceReadOnly();
+  const update = useWorkspacesControllerUpdate({
+    mutation: {
+      onSuccess: (w) => {
+        toast.success(w.logoFileId ? t('files:logo.saved') : t('files:logo.removed'));
+        queryClient.setQueryData(getWorkspacesControllerCurrentQueryKey(), w);
+      },
+      onError: (e) => toast.error(workspaceProblem(t, e)),
+    },
+  });
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t('files:logo.title')}</CardTitle>
+        <CardDescription>{t('files:logo.workspaceDescription')}</CardDescription>
+      </CardHeader>
+      <CardContent className="max-w-xl">
+        <LogoField
+          ownerName={workspace.name}
+          fileId={workspace.logoFileId}
+          editable={canManage && !readOnly}
+          saving={update.isPending}
+          onSave={(logoFileId) => update.mutate({ data: { logoFileId } })}
+        />
+      </CardContent>
+    </Card>
   );
 }
 

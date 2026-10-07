@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState, ErrorState, PageSkeleton } from '@/components/ui/states';
 import { TabNav, TabNavLink } from '@/components/ui/tabs';
+import { FileImage } from '@/features/files/components/file-image';
 import { usePermission } from '@/lib/auth/me';
 import { isApiError } from '@/lib/problem';
 import { useDisplayNames, useSectors } from '@/lib/reference';
@@ -70,6 +71,11 @@ export function CompanyLayout() {
       </nav>
       <PageHeader
         title={c.displayName}
+        media={
+          c.logoFileId ? (
+            <FileImage fileId={c.logoFileId} alt={t('files:logo.alt', { name: c.displayName })} className="size-12" />
+          ) : undefined
+        }
         description={[c.legalName !== c.displayName ? c.legalName : null, ...facts].filter(Boolean).join(' · ')}
       />
       <TabNav label={t('sections')} className="mb-6">

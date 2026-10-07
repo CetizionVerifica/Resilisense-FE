@@ -55,7 +55,8 @@
     "ofLimit": "{used} of {max}",
     "unlimited": "{used} · no limit",
     "full": "Limit reached",
-    "projectsPerYear": "Up to {max, plural, one {# project} other {# projects}} per year"
+    "projectsPerYear": "Up to {max, plural, one {# project} other {# projects}} per year",
+    "storageMb": "Storage (MB)"
   },
   "modules": {
     "title": "Modules",

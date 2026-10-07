@@ -1,0 +1,37 @@
+{
+  "logo": {
+    "title": "Logo",
+    "workspaceDescription": "Shown in exported reports and emails. Square images work best.",
+    "companyDescription": "Shown on this company's pages and in its reports.",
+    "alt": "Logo of {name}",
+    "none": "No logo yet",
+    "drop": "Drop a logo here, or browse for one",
+    "browse": "Choose a file",
+    "replace": "Choose another file",
+    "remove": "Remove logo",
+    "saved": "Logo saved",
+    "removed": "Logo removed",
+    "readOnly": "Only an owner or admin can change the logo."
+  },
+  "hint": "{types} · up to {size, number} MB",
+  "progress": {
+    "uploading": "Uploading {name}",
+    "checking": "Checking {name} for viruses and file type…"
+  },
+  "error": {
+    "tooLarge": "This file is larger than {size, number} MB.",
+    "rejected": {
+      "mimeType": "This type of file is not allowed here.",
+      "name": "The file name's extension does not match its type.",
+      "size": "This file is larger than allowed here.",
+      "file": "This file's content does not match its type, or it contains something unsafe (such as script in an SVG)."
+    },
+    "infected": "This file was flagged by the virus scan and cannot be used.",
+    "transfer": "The upload did not finish. Check your connection and try again.",
+    "timeout": "Checking the file is taking longer than usual. Try again in a minute.",
+    "storageFull": "Your plan's storage is full. Delete files or contact your account manager.",
+    "forbidden": "You don't have permission to upload this file.",
+    "generic": "The file could not be uploaded.",
+    "retry": "Try again"
+  }
+}
