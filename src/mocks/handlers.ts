@@ -27,9 +27,18 @@ import {
   WORKSPACES,
   WS_ACME,
 } from './data';
+import {
+  MOCK_INFECTED,
+  MOCK_MISMATCH,
+  MOCK_PURPOSE_RULES,
+  MOCK_STORAGE_URL,
+  type MockFile,
+  publicFile,
+  summary,
+} from './files';
 
 /**
- * In-memory M01 + M02 API (docs/revamp/modules/M01 §8, M02 §8) with the same shapes and problem codes as
+ * In-memory M01 + M02 + M14 API (docs/revamp/modules/M01 §8, M02 §8, M14 §4) with the same shapes and problem codes as
  * CSR_BE. State resets with `resetMockState()` (tests) or a page reload (browser).
  */
 export const problem = (status: number, type: string, title: string, extra: Record<string, unknown> = {}) =>
@@ -61,6 +70,7 @@ function freshState() {
     activity: initialActivity(),
     partnerGrants: initialPartnerGrants(),
     partnerClients: initialPartnerClients(),
+    files: [] as MockFile[],
   };
 }
 
@@ -172,6 +182,81 @@ function logActivity(companyId: string, action: string, actor: MockUser, fields:
     actor: { id: actor.id, name: actor.name },
     fields,
   });
+}
+
+function fileIn(wid: string, id: unknown) {
+  return state.files.find((f) => f.workspaceId === wid && f.id === id && !f.deletedAt);
+}
+
+/** A logo reference must be a ready logo file of the same workspace (CSR_BE FilesService.assertLogo). */
+function logoProblem(input: Json, wid: string): Response | null {
+  if (input.logoFileId === undefined || input.logoFileId === null) return null;
+  const f = fileIn(wid, input.logoFileId);
+  return f && f.purpose === 'logo' && f.status === 'ready'
+    ? null
+    : invalid('logoFileId', 'Not a ready logo file of this workspace');
+}
+
+function logoInUse(wid: string, id: string): boolean {
+  return (
+    state.workspaces[wid]?.logoFileId === id ||
+    companiesOf(wid).some((c) => c.logoFileId === id) ||
+    companiesOf(wid, true).some((c) => c.logoFileId === id)
+  );
+}
+
+function storedMb(wid: string): number {
+  const bytes = state.files
+    .filter((f) => f.workspaceId === wid && f.status !== 'pending')
+    .reduce((sum, f) => sum + f.sizeBytes, 0);
+  return Math.ceil(bytes / (1024 * 1024));
+}
+
+/** Declaration checks of POST /files/uploads and /files/:id/versions (M14 §2). */
+function declarationProblem(purpose: 'evidence' | 'logo', input: Json): Response | null {
+  const rules = MOCK_PURPOSE_RULES[purpose];
+  if (typeof input.name !== 'string' || !input.name.trim()) return invalid('name', 'Required');
+  if (!rules.mimeTypes.includes(String(input.mimeType))) return invalid('mimeType', 'This file type is not allowed');
+  if (typeof input.size !== 'number' || input.size < 1 || input.size > rules.maxBytes)
+    return invalid('size', 'This file is too large');
+  return null;
+}
+
+const STORAGE_CORS = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'GET, PUT, POST',
+  'access-control-allow-headers': 'content-type',
+};
+
+function presigned(file: MockFile, versionId: string) {
+  return {
+    file: summary(file),
+    versionId,
+    upload: {
+      url: `${MOCK_STORAGE_URL}/upload/${file.id}`,
+      method: 'PUT' as const,
+      headers: { 'content-type': file.mimeType },
+      fields: {},
+      expiresAt: new Date(Date.now() + 300_000).toISOString(),
+    },
+  };
+}
+
+function newVersion(file: MockFile, input: Json, uploadedBy: string) {
+  const now = new Date().toISOString();
+  const version = {
+    id: `01920000-0000-7000-8000-${String(500000000000 + ++state.counter)}`,
+    name: String(input.name),
+    mimeType: String(input.mimeType),
+    sizeBytes: Number(input.size),
+    sha256: null,
+    status: 'pending' as const,
+    scanResult: null,
+    uploadedBy,
+    createdAt: now,
+  };
+  file.versions.unshift(version);
+  return version;
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -549,6 +634,8 @@ export const handlers = [
     if (actor instanceof Response) return actor;
     const input = await body(request);
     if (typeof input.name === 'string' && !input.name.trim()) return invalid('name', 'Required');
+    const badLogo = logoProblem(input, actor.session.workspaceId);
+    if (badLogo) return badLogo;
     const ws = state.workspaces[actor.session.workspaceId]!;
     const { branding, ...rest } = input as Json & { branding?: Json };
     Object.assign(ws, rest, branding ? { branding: { ...ws.branding, ...branding } } : {});
@@ -569,6 +656,7 @@ export const handlers = [
         companies: companiesOf(wid).length,
         users: wid === WS_ACME ? state.members.filter((m) => m.status === 'active').length : 1,
         clientWorkspaces: ws.limits.clientWorkspaces ? state.partnerClients.length : 0,
+        storageMb: storedMb(wid),
       },
     });
   }),
@@ -618,7 +706,7 @@ export const handlers = [
     if (actor instanceof Response) return actor;
     const wid = actor.session.workspaceId;
     const input = await body(request);
-    const fieldsProblem = companyFieldsProblem(input, wid);
+    const fieldsProblem = companyFieldsProblem(input, wid) ?? logoProblem(input, wid);
     if (fieldsProblem) return fieldsProblem;
     const max = WORKSPACES[wid]!.limits.companies;
     if (typeof max === 'number' && companiesOf(wid).length >= max) {
@@ -673,7 +761,7 @@ export const handlers = [
     const c = companyIn(wid, params.id);
     if (!c) return notFound();
     const input = await body(request);
-    const fieldsProblem = companyFieldsProblem(input, wid, c.id);
+    const fieldsProblem = companyFieldsProblem(input, wid, c.id) ?? logoProblem(input, wid);
     if (fieldsProblem) return fieldsProblem;
     const changed = Object.keys(input).filter(
       (k) => JSON.stringify(input[k]) !== JSON.stringify((c as unknown as Json)[k]),
@@ -780,5 +868,151 @@ export const handlers = [
       },
       { status: 201 },
     );
+  }),
+
+  // ─── M14 §4 ───
+  http.post('*/v1/files/uploads', async ({ request }) => {
+    const input = await body(request);
+    const purpose = input.purpose === 'logo' ? 'logo' : 'evidence';
+    const actor = actorOf(request, purpose === 'logo' ? 'company:update' : 'evidence:upload');
+    if (actor instanceof Response) return actor;
+    const declared = declarationProblem(purpose, input);
+    if (declared) return declared;
+    const now = new Date().toISOString();
+    const file: MockFile = {
+      id: `01920000-0000-7000-8000-${String(400000000000 + ++state.counter)}`,
+      workspaceId: actor.session.workspaceId,
+      purpose,
+      name: String(input.name),
+      mimeType: String(input.mimeType),
+      sizeBytes: Number(input.size),
+      status: 'pending',
+      currentVersionId: null,
+      sha256: null,
+      uploadedBy: actor.session.user.id,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      versions: [],
+    };
+    const version = newVersion(file, input, actor.session.user.id);
+    state.files.push(file);
+    return HttpResponse.json(presigned(file, version.id), { status: 201 });
+  }),
+
+  // The object store answers the browser's CORS preflight, like a configured bucket or Cloudinary.
+  http.options(`${MOCK_STORAGE_URL}/*`, () => new HttpResponse(null, { status: 204, headers: STORAGE_CORS })),
+
+  http.put(`${MOCK_STORAGE_URL}/upload/:id`, async ({ request, params }) => {
+    const f = state.files.find((x) => x.id === params.id);
+    if (!f) return new HttpResponse(null, { status: 404, headers: STORAGE_CORS });
+    f.body = await request.arrayBuffer();
+    return new HttpResponse(null, { status: 200, headers: STORAGE_CORS });
+  }),
+
+  http.get(`${MOCK_STORAGE_URL}/download/:id`, ({ params }) => {
+    const f = state.files.find((x) => x.id === params.id);
+    if (!f?.body) return new HttpResponse(null, { status: 404 });
+    return new HttpResponse(f.body, { headers: { ...STORAGE_CORS, 'content-type': f.mimeType } });
+  }),
+
+  http.post('*/v1/files/:id/complete', ({ request, params }) => {
+    const actor = actorOf(request, 'project:read');
+    if (actor instanceof Response) return actor;
+    const f = fileIn(actor.session.workspaceId, params.id);
+    const version = f?.versions[0];
+    if (!f || !version) return notFound();
+    if (version.status !== 'pending')
+      return problem(409, 'conflict', 'Nothing to complete', { detail: 'No upload is waiting for this file' });
+    if (!f.body) return problem(409, 'conflict', 'The file has not been uploaded yet');
+    if (MOCK_MISMATCH.test(version.name)) {
+      version.status = 'rejected';
+      if (!f.currentVersionId) f.status = 'deleted';
+      return invalid('file', 'The content does not match the declared file type');
+    }
+    version.status = 'scanning';
+    if (!f.currentVersionId) f.status = 'scanning';
+    f.updatedAt = new Date().toISOString();
+    return HttpResponse.json(publicFile(f), { status: 202 });
+  }),
+
+  http.get('*/v1/files', ({ request }) => {
+    const actor = actorOf(request, 'project:read');
+    if (actor instanceof Response) return actor;
+    const url = new URL(request.url);
+    const purpose = url.searchParams.get('purpose');
+    const rows = state.files
+      .filter((f) => f.workspaceId === actor.session.workspaceId && !f.deletedAt && f.status === 'ready')
+      .filter((f) => !purpose || f.purpose === purpose)
+      .map(summary);
+    return HttpResponse.json(page(rows, url));
+  }),
+
+  http.get('*/v1/files/:id', ({ request, params }) => {
+    const actor = actorOf(request, 'project:read');
+    if (actor instanceof Response) return actor;
+    const f = fileIn(actor.session.workspaceId, params.id);
+    if (!f) return notFound();
+    // The scan finishes by the next poll.
+    const version = f.versions[0];
+    if (version?.status === 'scanning') {
+      const infected = MOCK_INFECTED.test(version.name);
+      version.status = infected ? 'quarantined' : 'ready';
+      version.scanResult = infected ? 'infected' : 'clean';
+      version.sha256 = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+      if (!infected) {
+        Object.assign(f, {
+          currentVersionId: version.id,
+          name: version.name,
+          mimeType: version.mimeType,
+          sizeBytes: version.sizeBytes,
+          sha256: version.sha256,
+          status: 'ready',
+        });
+      } else if (!f.currentVersionId) f.status = 'quarantined';
+      f.updatedAt = new Date().toISOString();
+    }
+    return HttpResponse.json(publicFile(f));
+  }),
+
+  http.get('*/v1/files/:id/download', ({ request, params }) => {
+    const actor = actorOf(request, 'project:read');
+    if (actor instanceof Response) return actor;
+    const f = fileIn(actor.session.workspaceId, params.id);
+    if (!f) return notFound();
+    if (f.status !== 'ready') return problem(409, 'conflict', 'The file is not available');
+    const inline = /^(image\/(png|jpeg)|application\/pdf)$/.test(f.mimeType);
+    return HttpResponse.json({
+      url: `${MOCK_STORAGE_URL}/download/${f.id}`,
+      expiresAt: new Date(Date.now() + 300_000).toISOString(),
+      name: f.name,
+      mimeType: f.mimeType,
+      inline,
+    });
+  }),
+
+  http.post('*/v1/files/:id/versions', async ({ request, params }) => {
+    const actor = actorOf(request, 'evidence:upload');
+    if (actor instanceof Response) return actor;
+    const f = fileIn(actor.session.workspaceId, params.id);
+    if (!f || f.purpose !== 'evidence') return notFound();
+    const input = await body(request);
+    const declared = declarationProblem('evidence', input);
+    if (declared) return declared;
+    const version = newVersion(f, input, actor.session.user.id);
+    f.body = undefined;
+    return HttpResponse.json(presigned(f, version.id), { status: 201 });
+  }),
+
+  http.delete('*/v1/files/:id', ({ request, params }) => {
+    const actor = actorOf(request, 'project:read');
+    if (actor instanceof Response) return actor;
+    const wid = actor.session.workspaceId;
+    const f = fileIn(wid, params.id);
+    if (!f) return notFound();
+    if (logoInUse(wid, f.id)) return problem(409, 'conflict', 'This file is in use as a logo');
+    f.deletedAt = new Date().toISOString();
+    f.status = 'deleted';
+    return new HttpResponse(null, { status: 204 });
   }),
 ];

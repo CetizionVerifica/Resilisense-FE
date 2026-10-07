@@ -122,7 +122,7 @@ export const WORKSPACES: Record<string, MockWorkspace> = {
     role: 'workspace_admin',
     plan: 'professional',
     modules: ['gap', 'materiality', 'actions'],
-    limits: { companies: 3, users: 25, projectsPerYear: 10 },
+    limits: { companies: 3, users: 25, projectsPerYear: 10, storageMb: 1024 },
   },
   [WS_BETA]: {
     id: WS_BETA,

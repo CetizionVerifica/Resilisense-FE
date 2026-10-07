@@ -5,16 +5,22 @@ export function PageHeader({
   title,
   description,
   actions,
+  media,
 }: {
   title: string;
   description?: string;
   actions?: ReactNode;
+  /** Optional image before the title, e.g. a company logo. */
+  media?: ReactNode;
 }) {
   return (
     <header className="flex flex-wrap items-start justify-between gap-4 pb-6">
-      <div className="grid gap-1">
-        <h1 className="text-h1 font-semibold text-fg">{title}</h1>
-        {description ? <p className="text-body text-fg-muted">{description}</p> : null}
+      <div className="flex items-center gap-4">
+        {media}
+        <div className="grid gap-1">
+          <h1 className="text-h1 font-semibold text-fg">{title}</h1>
+          {description ? <p className="text-body text-fg-muted">{description}</p> : null}
+        </div>
       </div>
       {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
     </header>

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useWorkspaceReadOnly } from '@/lib/auth/entitlements';
 import { usePermission } from '@/lib/auth/me';
+import { LogoField } from '@/features/files/components/logo-field';
 import { CompanyFields } from '../components/company-fields';
 import { DeleteCompanyDialog } from '../components/delete-company-dialog';
 import { applyCompanyErrors } from '../form-errors';
@@ -38,6 +39,17 @@ export function CompanySettingsPage() {
         void invalidate(updated.id);
       },
       onError: (e) => applyCompanyErrors(e, form.setError),
+    },
+  });
+
+  // Separate from the profile form: a logo is saved as soon as its upload is ready.
+  const logo = useCompaniesControllerUpdate({
+    mutation: {
+      onSuccess: (updated) => {
+        toast.success(updated.logoFileId ? t('files:logo.saved') : t('files:logo.removed'));
+        void invalidate(updated.id);
+      },
+      onError: (e) => toast.error(companyProblem(t, e)),
     },
   });
 
@@ -78,6 +90,21 @@ export function CompanySettingsPage() {
               </div>
             </form>
           </FormProvider>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('files:logo.title')}</CardTitle>
+          <CardDescription>{t('files:logo.companyDescription')}</CardDescription>
+        </CardHeader>
+        <CardContent className="max-w-xl">
+          <LogoField
+            ownerName={c.displayName}
+            fileId={c.logoFileId}
+            editable={!disabled}
+            saving={logo.isPending}
+            onSave={(logoFileId) => logo.mutate({ id: c.id, data: { logoFileId } })}
+          />
         </CardContent>
       </Card>
       <Card className="border-danger/40">
