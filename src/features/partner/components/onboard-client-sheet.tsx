@@ -21,9 +21,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { CompanyFields } from '@/features/companies/components/company-fields';
-import { applyCompanyErrors } from '@/features/companies/form-errors';
-import { EMPTY_COMPANY } from '@/features/companies/schemas';
+import { applyCompanyErrors, CompanyFields, EMPTY_COMPANY } from '@/features/companies';
 import { isApiError } from '@/lib/problem';
 import { useCountries, useDisplayNames } from '@/lib/reference';
 import { type ClientValues, clientSchema, toClientBody } from '../schemas';

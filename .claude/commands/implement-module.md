@@ -3,6 +3,10 @@ description: Implement the UI of one ResiliSense 2.0 module in this repo (fronte
 argument-hint: <module id, e.g. M04> [extra notes]
 ---
 
+Follow the project skill **`/build-module`** (`.claude/skills/build-module/SKILL.md`) for module **$ARGUMENTS**: it reads the CLAUDE.md chain (root → layer → module card), checks the spec is `Ready` and has a §14 contract (run `/module-contract` first if not), builds the module against that contract with fakes for unfinished dependencies, runs every check and opens the PR. Finish with `/check-module`.
+
+The steps below are the short version, kept for reference.
+
 Implement the frontend of module **$ARGUMENTS** in this repository (Resilisense-FE — the new Vite + React app).
 
 1. Read `CLAUDE.md`, `docs/revamp/README.md`, `docs/revamp/02-design-system.md` and the module spec `docs/revamp/modules/<id>-*.md` (the id is the first word of the arguments), especially §5 (acceptance criteria) and §9 (UI).

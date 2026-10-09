@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { useAuthControllerDisableMfa } from '@/api/generated/auth/auth';
 import { getMeControllerGetQueryKey } from '@/api/generated/me/me';
 import { type MeControllerGet200User } from '@/api/generated/model';
-import { MfaSetup } from '@/features/auth/components/mfa-setup';
+import { MfaSetup } from '@/features/auth';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

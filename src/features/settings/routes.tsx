@@ -1,6 +1,6 @@
 import { Navigate, type RouteObject } from 'react-router';
-import { membersRoutes } from '@/features/members/routes';
-import { workspaceRoutes } from '@/features/workspace/routes';
+import { membersRoutes } from '@/features/members';
+import { workspaceRoutes } from '@/features/workspace';
 import { SettingsLayout } from './components/settings-layout';
 
 /** `/settings/*` (M01 §9, M02 §9): profile, security, workspace, plan and — with `org:manage-users` — members. */

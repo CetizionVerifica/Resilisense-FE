@@ -11,3 +11,4 @@ package-lock.json
 docs/revamp
 # identical copy of CSR_BE (formatted there)
 scripts/spec-coverage*.mjs
+scripts/module-boundaries*.mjs
