@@ -14,7 +14,7 @@ The plan is split into loosely coupled modules that are built independently (`do
 
 - A feature imports another only as `@/features/<other>` (its `index.ts`); `src/components` and `src/lib` never import features (lint `resilisense/module-boundaries`).
 - The visual direction is **Calm Ledger** (`docs/revamp/02-design-system.md` §9): current tokens, one entrance animation per view, nothing that moves on its own.
-- Project skills: `/module-contract` (write a module's contract and card), `/build-module` (build one module), `/check-module` (audit boundaries, contracts, cards, UI rules).
+- Project skills: `/module-contract` (write a module's contract and card), `/build-module` (build one module), `/check-module` (audit boundaries, contracts, cards, UI rules); `/run-plan` runs the whole plan hands-free (next step from `npm run plan:status`, PRs driven to green, skills updated from what each run learned).
 
 ## Target stack (see `docs/revamp/01-target-architecture.md` ADR-008)
 
