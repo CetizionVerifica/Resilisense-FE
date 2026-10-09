@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { newPassword } from '@/features/auth/schemas';
+import { newPassword } from '@/features/auth';
 
 /** Mirrors `PATCH /v1/me` (M01 §4.1 profile); the API validates again. */
 export const profileSchema = z.object({

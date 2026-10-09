@@ -5,6 +5,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import { logicalProperties } from './scripts/eslint-logical-properties.js';
+import { moduleBoundaries } from './scripts/module-boundaries.mjs';
 
 export default tseslint.config(
   {
@@ -40,7 +41,10 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    plugins: { 'react-hooks': reactHooks, resilisense: { rules: { 'logical-properties': logicalProperties } } },
+    plugins: {
+      'react-hooks': reactHooks,
+      resilisense: { rules: { 'logical-properties': logicalProperties, 'module-boundaries': moduleBoundaries } },
+    },
     rules: {
       ...reactHooks.configs.recommended.rules,
       '@typescript-eslint/no-explicit-any': 'error',
@@ -64,7 +68,22 @@ export default tseslint.config(
   },
   {
     files: ['src/**/*.{ts,tsx}'],
-    rules: { 'resilisense/logical-properties': 'error' },
+    rules: {
+      'resilisense/logical-properties': 'error',
+      // Loose coupling (docs/revamp/06-modular-build.md §3): features meet only through their index.ts;
+      // shared layers (ui, charts, lib, mocks) never depend on a feature or on the app shell.
+      'resilisense/module-boundaries': [
+        'error',
+        {
+          root: 'src/features',
+          alias: { '@/': 'src/' },
+          layers: [
+            { from: 'src/components', forbid: ['src/features', 'src/app'] },
+            { from: 'src/lib', forbid: ['src/features', 'src/app'] },
+          ],
+        },
+      ],
+    },
   },
   {
     files: ['scripts/**', 'e2e/**', '*.config.ts', 'eslint.config.js'],

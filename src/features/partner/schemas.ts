@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { type PartnerControllerCreateBody } from '@/api/generated/model';
-import { companySchema, toCreateBody } from '@/features/companies/schemas';
+import { companySchema, toCreateBody } from '@/features/companies';
 
 /** Onboard a client (M02 US-02-1): workspace, first company, owner email (no password). */
 export const clientSchema = companySchema.extend({
