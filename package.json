@@ -24,6 +24,7 @@
     "postinstall": "npm run -s api:generate",
     "i18n:check": "node scripts/i18n-check.mjs",
     "spec:coverage": "node scripts/spec-coverage.mjs",
+    "plan:status": "node scripts/plan-status.mjs",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "audit": "audit-ci --config audit-ci.jsonc"
