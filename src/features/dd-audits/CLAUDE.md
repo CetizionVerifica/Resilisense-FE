@@ -27,7 +27,7 @@ Generated hooks for `/v1/companies/:cid/dd-audits*`, `/v1/dd-audits/*`, `/v1/dd-
 
 ## Events
 
-No domain events in the browser. After mutations invalidate the generated keys: plan/schedule/transition → audit list + detail (and `allowedTransitions`); item answers autosave and invalidate only that audit's items and completion; finding create/edit/raise/withdraw → the audit's findings and the findings register. The backend emits `dd_audit.scheduled|completed|cancelled`, `finding.raised|withdrawn|closed` (M23 §10); CAP status per finding is read from the corrective-actions API, never derived.
+No domain events in the browser. After mutations the page invalidates generated query keys as follows. Plan, schedule or transition → audit list + detail (and `allowedTransitions`); item answers autosave and invalidate only that audit's items and completion; finding create/edit/raise/withdraw → the audit's findings and the findings register. The backend emits `dd_audit.scheduled|completed|cancelled`, `finding.raised|withdrawn|closed` (M23 §10); CAP status per finding is read from the corrective-actions API, never derived.
 
 ## Components & behaviour
 
