@@ -25,6 +25,10 @@ The in-app notification centre: the bell in the top bar, the full notifications 
 
 Generated `notifications` and `me` hooks only; `usePermission('workspace:manage')` for the workspace tab; `src/lib/format.ts` for relative dates. MSW handlers in `mocks.ts` (contract-checked against `api/openapi.json`; `npm run api:sync` against the backend PR while it is in review).
 
+## Events
+
+None in the frontend: notifications arrive through the API (`/v1/notifications`, unread count polled). Backend events are in the backend card.
+
 ## Components & behaviour
 
 - `notification-bell` — ghost icon button; badge with the unread count (`9+` above nine, hidden at 0); accessible name "Notifications, 3 unread" (ICU plural). Unread count polled every 60 s while `document.visibilityState === 'visible'` (TanStack `refetchInterval` + `refetchIntervalInBackground: false`) and refetched after every mark-read. The badge never animates (Calm Ledger: nothing moves on its own).
@@ -33,6 +37,12 @@ Generated `notifications` and `me` hooks only; `usePermission('workspace:manage'
 - `notifications-page` — list page (02 §5): category filter chips + "Unread only" toggle synced to the URL (`?category=&unread=1`), "Load more" button for the next cursor page (no auto-loading scroll), per-row mark read and "Mark all as read". States: skeleton rows while loading; empty state explaining what will appear here (and, with filters, a "Clear filters" action); error state with retry. One `--motion-enter` entrance on first render only; refetches update in place.
 - `preferences-page` — `/settings/notifications`: matrix of categories (rows) × channels In-app / Email (columns), each a select of Instant / Daily digest / Weekly digest / Off, with a source hint (mine · workspace default · ResiliSense default). Security row locked with an explanation. React Hook Form + Zod, submit disabled while pending, problem+json errors mapped to cells. Tab "Workspace defaults" only with `workspace:manage` (same matrix, saves `/notification-defaults`). Table with row/column headers so screen readers announce "Assignments, Email".
 - `unsubscribe-page` — public: posts the token once on load, then shows "You will no longer receive <category> emails" with a link to preferences; invalid token → error state explaining the link is not valid, with a sign-in link.
+
+## Invariants
+
+- Only app-relative `link`s are followed; params render as text, never HTML.
+- Unread state is shown with a dot and bold text, never colour alone; the bell never animates.
+- Preferences come from and go to the API; the frontend never decides who is notified.
 
 ## Tests
 
