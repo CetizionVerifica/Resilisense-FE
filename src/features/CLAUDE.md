@@ -43,3 +43,7 @@ Write the contract first (`/module-contract`), then `/build-module`. Run `npm ru
 ## Features in this repo
 
 Built: `auth` (M01), `settings` (M01 profile and security), `members` (M01), `workspace` (M02 settings), `companies` (M02), `partner` (M02), `home` (placeholder dashboard). Planned: the due diligence modules of `06-modular-build.md` §5 (same folder names as the backend).
+
+### Planned DD features
+
+Draft cards exist for supplier-register, supplier-portal, questionnaires, supplier-evidence, risk, screening, dd-audits, corrective-actions, monitoring, grievances, dd-reporting and esg-data (`src/features/<module>/CLAUDE.md`). They share one sidebar group, **Due diligence**, in this order: Overview · Suppliers · Questionnaires · Risk · Ranking · Evidence · Audits · Corrective actions · Monitoring · Grievances. Supplier-side users see My customers · Questionnaire requests · Customer actions; DD reports sit under Insights. The supplier detail page is owned by `supplier-register`; other features add tabs through `supplierDetailRoute(extraTabs)` composed in `src/app/router.tsx`, never by importing each other's pages.
