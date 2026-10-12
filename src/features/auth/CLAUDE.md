@@ -1,6 +1,6 @@
 # Auth (M01 §9 · SD01)
 
-> Spec: `docs/revamp/modules/M01-identity-access.md` · Status: Shipped (first slice) · Backend: `CSR_BE/src/modules/identity`
+> Spec: `docs/revamp/modules/M01-identity-access.md` · Status: Shipped (first slice) · Wave: 0 · Backend: `CSR_BE/src/modules/identity`
 
 ## Purpose
 
@@ -24,6 +24,10 @@ Public sign-in journey and the gates every signed-in route passes through.
 ## Depends on
 
 Generated `auth`/`me`/`invitations` hooks; `src/lib/auth` (token in memory, silent refresh, `useAuth`).
+
+## Events
+
+None of its own: events are emitted by the backend module. After every mutation the page invalidates the generated query keys it changed (06 §3.2).
 
 ## Components & behaviour
 

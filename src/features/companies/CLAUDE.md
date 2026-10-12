@@ -1,6 +1,6 @@
 # Companies (M02 §9 · SD01)
 
-> Spec: `docs/revamp/modules/M02-workspaces-companies.md` · Status: Shipped (first slice, deferred tabs in M02 §9)
+> Spec: `docs/revamp/modules/M02-workspaces-companies.md` · Status: Shipped (first slice, deferred tabs in M02 §9) · Wave: 0 · Backend: `CSR_BE/src/modules/workspaces`
 
 ## Purpose
 
@@ -22,6 +22,10 @@ List, create and manage the companies of a workspace; the future home of each co
 
 Generated `companies` and `reference` hooks; `src/lib/reference.ts` (sectors, countries, display names).
 
+## Events
+
+None of its own: events are emitted by the backend module. After every mutation the page invalidates the generated query keys it changed (06 §3.2).
+
 ## Components & behaviour
 
 - `companies-page` + `companies-table` — list page pattern (02 §5): search, filters, create; empty state offers "New company".
@@ -29,6 +33,12 @@ Generated `companies` and `reference` hooks; `src/lib/reference.ts` (sectors, co
 - `company-layout` — header with status, URL-synced tabs (Overview · Activity · Settings); suppliers tab is added by `supplier-register` through a route child, not by editing this layout's logic.
 - `delete-company-dialog` — confirmation naming the company; the API soft-deletes and allows a restore.
 - `activity-feed` — audit events, relative dates.
+
+## Invariants
+
+- Server state only through generated hooks; permissions and limits come from the API (`usePermission`, entitlements), never computed here.
+- Calm Ledger (`02` §9): tokens only, logical utilities, one entrance per view through the shared primitives, nothing moves on its own, reduced motion renders final values.
+- Every async view has a loading skeleton, an empty state with a call to action and an error state with retry.
 
 ## Tests
 

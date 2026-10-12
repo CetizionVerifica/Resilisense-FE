@@ -21,4 +21,6 @@ Level 1 (`docs/revamp/06-modular-build.md` §2). Not built yet: the first module
 | `RiskHeatmap`         | `heatmap`         | Category × region, value in every cell, `onCellClick(category, region)` so the page can navigate to the filtered register |
 | `TierFlowChart`       | `sankey`          | Tier 1–3 → Low/Medium/High, ribbons draw tier by tier; table view lists source, target, count                             |
 
+Planned DOM widgets (no ECharts, live here because they render risk scores): `RiskMeter` (score 0–100 on the risk ramp, band label as text, used on the supplier header and risk page) and `RiskBadge` (band pill with text label, used in tables and the ranking). Both are planned, built by the first module that needs them (risk, wave 2); features never define their own. The monitoring signal feed is a feature component (`monitoring`), not a chart.
+
 Existing plan from 02 §4 (materiality matrix, gap bars, radar, donut, gauge, sparkline) follows the same wrapper. Each chart gets a story with light, dark and RTL, and a test for the table view.
